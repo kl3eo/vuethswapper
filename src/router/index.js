@@ -1,15 +1,15 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '@/views/Index'
-import NotFound from '@/views/NotFound'
+import HistoryTable from '@/views/HistoryTable'
 
 // eth
 import EthIndex from '@/views/eth/EthIndex'
 import Wallet from '@/views/eth/Wallet'
 import WalletSeed from '@/views/eth/WalletSeed'
 import ImportKeystore from '@/views/eth/ImportKeystore'
-import EtherTransaction from '@/views/eth/EtherTransaction'
-// import ContractTransaction from '@/views/eth/ContractTransaction'
+import ValueTransaction from '@/views/eth/ValueTransaction'
+import SPExchange from '@/views/eth/SPExchange'
 
 Vue.use(Router)
 
@@ -54,29 +54,27 @@ export default new Router({
             title: 'Import Wallet'
           }
         }, {
-          path: 'ether-transaction',
+          path: 'value-transaction',
           name: 'valueTransaction',
-          component: EtherTransaction,
+          component: ValueTransaction,
           meta: {
-            title: 'Ether Transaction'
+            title: 'Transfer Funds'
+          }
+        }, {
+          path: 'sp-exchange',
+          name: 'spExchange',
+          component: SPExchange,
+          meta: {
+            title: 'SkyRHC Exchange'
           }
         }
-        // {
-        //   path: 'contract-transaction',
-        //   name: 'contractTransaction',
-        //   component: ContractTransaction,
-        //   meta: {
-        //     title: 'Contract Transaction'
-        //   }
-        // }
       ]
-    },
-    {
-      path: '*',
-      name: 'notfound',
-      component: NotFound,
+    }, {
+      path: '/hist',
+      name: 'history-table',
+      component: HistoryTable,
       meta: {
-        title: 'NotFound'
+        title: 'Swap History'
       }
     }
   ]

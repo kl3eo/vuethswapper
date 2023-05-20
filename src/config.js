@@ -1,27 +1,45 @@
 const config = {}
 
 config.hosts = {
-  main: {
+/*
+    main: {
     test: false,
     rpcUri: 'https://mainnet.infura.io/v3/e117f524e71d42ec85df7fbdfe2e46e3',
     explorerUri: 'https://etherscan.io',
-    chainId: 1,
-    confirmation: 15
+    chainId: 1
   },
-  goerli: {
+  ropsten: {
     test: true,
-    rpcUri: 'https://goerli.infura.io/v3/e117f524e71d42ec85df7fbdfe2e46e3',
-    explorerUri: 'https://goerli.etherscan.io',
-    chainId: 5,
-    confirmation: 2
+    rpcUri: 'https://ropsten.infura.io/v3/e117f524e71d42ec85df7fbdfe2e46e3',
+    explorerUri: 'https://ropsten.etherscan.io',
+    chainId: 3
   },
-  sepolia: {
+  kovan: {
     test: true,
-    rpcUri: 'https://sepolia.infura.io/v3/e117f524e71d42ec85df7fbdfe2e46e3',
-    explorerUri: 'https://sepolia.etherscan.io',
-    chainId: 11155111,
-    confirmation: 2
+    rpcUri: 'https://kovan.infura.io/v3/e117f524e71d42ec85df7fbdfe2e46e3',
+    explorerUri: 'https://kovan.etherscan.io',
+    chainId: 42
+  },
+  rinkeby: {
+    test: true,
+    rpcUri: 'https://rinkeby.infura.io/v3/e117f524e71d42ec85df7fbdfe2e46e3',
+    explorerUri: 'https://rinkeby.etherscan.io',
+    chainId: 4
+  },
+*/
+  callisto: {
+    test: false,
+    rpcUri: 'https://rpc.callisto.network',
+    explorerUri: 'https://explorer.callisto.network/',
+    chainId: 820
+  },
+  expanse: {
+    test: false,
+    rpcUri: 'https://node.expanse.tech',
+    explorerUri: 'https://explorer.expanse.tech/',
+    chainId: 2
   }
+
 }
 
 module.exports = exports = config

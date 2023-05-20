@@ -33,15 +33,15 @@ export default {
       error: false,
       feedback: {},
       value: 0,
-      unit: 'wei',
+      unit: 'coin',
       units: {
         wei: 1,
         kwei: 1000,
         mwei: 1000000,
         gwei: 1000000000,
-        szabo: 1000000000000,
-        finny: 1000000000000000,
-        ether: 1000000000000000000
+        micro: 1000000000000,
+        milli: 1000000000000000,
+        coin: 1000000000000000000
       }
     }
   },

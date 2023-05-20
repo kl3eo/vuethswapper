@@ -1,12 +1,12 @@
 <template>
 <div class="columns">
   <div class="column is-one-quarter">
-    <label class="label" for="pass">Password (No space)</label>
+    <label class="label" for="pass">Password</label>
   </div>
 
   <div class="column is-half">
     <div class="control">
-      <input id="pass" class="input" type="text" v-model="password" placeholder="Password (No space)" v-on:blur.prevent.self="checkPassword" v-if="type === 'text'" v-bind:class="{'is-danger': ((!isPasswordValid && !emptyPassword) || error), 'is-success': (isPasswordValid)}">
+      <input id="pass" class="input" type="text" v-model="password" placeholder="Password" v-on:blur.prevent.self="checkPassword" v-if="type === 'text'" v-bind:class="{'is-danger': ((!isPasswordValid && !emptyPassword) || error), 'is-success': (isPasswordValid)}">
       <input id="pass" class="input" type="password" v-model="password" placeholder="Password" v-on:blur.prevent.self="checkPassword" v-if="type === 'password'" v-bind:class="{'is-danger': ((!isPasswordValid && !emptyPassword) || error), 'is-success': (isPasswordValid)}">
       <p class="help is-success password-help" v-if="isPasswordValid">
         <span class="password-help-msg">Strong Password</span>
@@ -75,7 +75,7 @@ export default {
       } else if (/(?:[\s]+)/.test(this.password)) {
         result = {
           feedback: {
-            suggestions: [ 'Avoid space in password.' ]
+            suggestions: [ 'No space in password!' ]
           }
         }
         this.feedback = result.feedback

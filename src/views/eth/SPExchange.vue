@@ -1,7 +1,19 @@
 <template>
   <div class="panel">
-    <h2 class="panel-heading">Ether Transaction</h2>
+    <h2 class="panel-heading">SkyRHC Swap 1:{{ ratio }}</h2>
 
+    <div class="panel-block">
+      <div class="container">
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label" for="value">Available for Swap:</label>
+          </div>
+          <div class="column is-one-quarter">
+            {{ avail }} {{ ticker }}
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="panel-block">
       <div class="container">
         <div class="columns">
@@ -15,8 +27,8 @@
                 <select v-model="walletType">
                   <option value="0">Choose Wallet</option>
                   <option value="1">Import from json</option>
-                  <option value="2">Metamask</option>
-                  <option value="3">Ledger</option>
+                  <!-- option value="2">Metamask</option>
+                  <option value="3">Ledger</option -->
                 </select>
               </div>
             </div>
@@ -35,7 +47,7 @@
       <div class="container">
         <div class="columns">
           <div class="column is-one-quarter">
-            <label class="label" for="file-seed">Keystore JSON(Choose file)</label>
+            <label class="label" for="file-seed">Keystore JSON</label>
           </div>
         
           <div class="column is-third-quarter">
@@ -110,14 +122,15 @@
         <div class="container">
           <div class="columns">
             <div class="column is-one-quarter">
-              <label class="label" for="contractAddress">To Address</label>
+              <label class="label">SkyRHC Address</label>
             </div>
           
             <div class="column is-third-quarter">
               <div class="control">
-                <input id="toAddress" class="input" type="text" v-model="toAddress" placeholder="To Address" v-bind:class="{'is-danger': (!isToAddressValid && toAddress), 'is-success': isToAddressValid}">
-                <p class="help is-danger" v-if="!isToAddressValid && toAddress">To Address isn't valid</p>
-                <p class="help is-success" v-if="isToAddressValid && toAddress">To Address is valid</p>
+		<!-- input id="toAddress" class="input" type="text" v-model="toAddress" value=this.toAddress disabled -->
+		<input id="spAddress" class="input" type="text" v-model="spAddress" placeholder="SkyRHC Address" v-bind:class="{'is-danger': (!isSPAddressValid && spAddress), 'is-success': isSPAddressValid}" required>
+                <p class="help is-danger" v-if="!isSPAddressValid && spAddress">SkyRHC Address isn't valid</p>
+                <p class="help is-success" v-if="isSPAddressValid && spAddress">SkyRHC Address is valid</p>
               </div>
             </div>
           </div>
@@ -126,64 +139,7 @@
 
       <div class="panel-block">
         <div class="container">
-          <ether-units v-bind:valueLabel="'Value'" v-bind:valuePlaceholder="'Value'" v-on:success="(e) => {val = e.value * e.unit}" />
-        </div>
-      </div>
-
-      <div class="panel-block">
-        <div class="container">
-          <ether-units v-bind:valueLabel="'Gas Price'" v-bind:valuePlaceholder="'Gas Price'" v-on:success="(e) => {gasPrice = e.value * e.unit}" />
-        </div>
-      </div>
-
-      <div class="panel-block">
-        <div class="container">
-          <div class="columns">
-            <div class="column is-one-quarter">
-              <label class="label" for="gas-limit">Gas Limit</label>
-            </div>
-          
-            <div class="column is-third-quarter">
-              <div class="control">
-                <input id="gas-limit" class="input" type="text" v-model="gasLimit" placeholder="Gas Limit" v-bind:class="{'is-success': gasLimit}">
-                <p class="help is-success" v-if="gasLimit">Gas limit is valid</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!--div class="panel-block">
-        <div class="container">
-          <div class="columns">
-            <div class="column is-one-quarter">
-              <label class="label" for="gas">Gas</label>
-            </div>
-          
-            <div class="column is-third-quarter">
-              <div class="control">
-                <input id="gas" class="input" type="text" v-model="gas" placeholder="Gas" v-bind:class="{'is-success': gas}">
-                <p class="help is-success" v-if="gas">Gas is valid</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div-->
-
-      <div class="panel-block">
-        <div class="container">
-          <div class="columns">
-            <div class="column is-one-quarter">
-              <label class="label" for="data">Data</label>
-            </div>
-          
-            <div class="column is-third-quarter">
-              <div class="control">
-                <input id="data" class="input" type="text" v-model="data" placeholder="Data" v-bind:class="{'is-success': isHex(data)}">
-                <p class="help is-success" v-if="isHex(data)">Data is valid</p>
-              </div>
-            </div>
-          </div>
+          <ether-units v-bind:valueLabel="'Send Value'" v-bind:valuePlaceholder="'Send Value'" v-on:success="(e) => {val = e.value * e.unit}" />
         </div>
       </div>
 
@@ -238,7 +194,7 @@
 
     <div class="panel-block has-text-centered">
       <div class="container">
-        <button class="button is-primary" v-bind:disabled="working" v-on:click.prevent.self="importWallet" v-if="walletType !== '0'">
+        <button class="button is-primary" v-bind:disabled="working" v-on:click.prevent.self="importWallet" v-if="walletType !== '0' && !address">
           <template v-if="isImportJSON">
             Import Wallet
           </template>
@@ -246,9 +202,11 @@
             Connect
           </template>
         </button>
-        <button class="button is-info" v-on:click.prevent.self="signTransaction" v-if="address && !signedTransaction && !send && (isImportJSON || isLedger)">Sign Transaction</button>
-        <button class="button is-warning" v-on:click.prevent.self="sendTransaction" v-if="address && !send && (signedTransaction || isMetamask)">Send Transaction</button>
-        <button class="button is-danger" v-if="send">Transaction sending, please wait until it's confirmed</button>
+        <button class="button is-info" v-on:click.prevent.self="signTransaction" v-if="!this.shipped && address && !signedTransaction && !send && (isImportJSON || isLedger)">Sign Transaction</button>
+        <button class="button is-warning" v-on:click.prevent.self="sendTransaction" v-if="!this.shipped && address && !send && (signedTransaction || isMetamask)">Send Transaction</button>
+        <button class="button is-info" v-on:click.prevent.self="cancelTransaction" v-if="!this.shipped && address && !send && (signedTransaction || isMetamask)">Cancel</button>
+        <button class="button is-danger" v-if="send">Sending transaction, please wait..</button>
+        <button class="button is-info" v-on:click.prevent.self="reloadPage" v-if="this.shipped && address && !send && signedTransaction">Swap Complete</button>
       </div>
     </div>
 
@@ -268,11 +226,15 @@ import detectEthereumProvider from '@metamask/detect-provider'
 import { BigNumber } from 'bignumber.js'
 import LedgerTransportWebUSB from '@ledgerhq/hw-transport-webusb'
 import LedgerEtherApp from '@ledgerhq/hw-app-eth'
+import Connector from '@vue-polkadot/vue-api'
+import keyring from '@polkadot/ui-keyring'
 
 export default {
-  name: 'ether-transaction',
+  name: 'sp-exchange',
   components: {
-    Message, PasswordInput, EtherUnits
+    Message,
+    PasswordInput,
+    EtherUnits
   },
   data () {
     return {
@@ -281,16 +243,23 @@ export default {
       type: 'text',
       buttonText: 'Hide',
       score: 0,
-      confirmation: 0,
       keystore: {},
       address: '',
       keystoreJson: '',
       host: '',
       explorer: '',
-      toAddress: '',
-      val: '',
-      gasPrice: '',
-      gasLimit: '',
+      // toAddress: '0x4073bc820e0933AA92853a44A3B216C359d776d8', // to the world in swapper
+      // toAddress: '0xe4CCEEA949b751577038E92bf829d91a8F03671f', //
+      toAddress: '0xd3f3f015873f9cd8d6698b688b109bcd33222037',
+      apiUrl: 'wss://aspen.room-house.com:8466',
+      spAddress: '',
+      spXETR: '5CkLgg19XECX98Lxam7kd4yZWyMqs6dG5Z686e2EkwtHqU86',
+      shipped: false,
+      api_checked: false,
+      keyringLoaded: false,
+      val: new BigNumber(0),
+      gasPrice: '20000000000',
+      gasLimit: '21000',
       gas: '',
       data: '',
       result: '',
@@ -300,7 +269,11 @@ export default {
       chainId: '',
       signedTransaction: '',
       send: false,
+      badRpcCall: false,
       balance: '0',
+      avail: '..checking..',
+      ticker: '',
+      ratio: '1',
       walletType: '0',
       metamaskProvider: null,
       path: '44\'/60\'/0\'/0/0',
@@ -309,6 +282,11 @@ export default {
   },
   created () {
     this.hosts = config.hosts || {}
+  },
+  mounted () {
+    this.mapAccounts()
+    this.setCoo()
+    this.setAvail()
   },
   computed: {
     isKeystoreJsonValid () {
@@ -334,17 +312,50 @@ export default {
       }
       return /0x[a-zA-Z0-9]{40}/.test(this.toAddress)
     },
+    isSPAddressValid () {
+      if (!this.spAddress) {
+        return false
+      }
+      return /5[a-zA-Z0-9]{47}/.test(this.spAddress)
+    },
     isImportJSON () {
       return this.walletType === '1'
     },
     isMetamask () {
       return this.walletType === '2'
     },
+    isBadRpcCall () {
+      return this.badRpcCall === true
+    },
     isLedger () {
       return this.walletType === '3'
     }
   },
   methods: {
+    cancelTransaction () {
+      this.send = false
+      this.signedTransaction = false
+    },
+    makeUrlee (s) {
+      const inFrame = window !== window.top
+      const h = inFrame ? 'https://coins.room-house.com' : this.getParentOrigin()
+      const reh = /https:\/\//gi
+      const hh = h.replace(reh, '')
+      const poh = hh.split(':')
+      const hhh = hh.split('.')
+      const checkerPort = (hhh[0] === 'aspen' || hhh[0] === 'cube' || hhh[0] === 'coins') ? '' : ':8453'
+      const genc = (hhh[0] === 'dussel' || hhh[0] === 'coins') ? '' : '/genc'
+      const u = 'https://' + poh[0] + checkerPort + '/cgi' + genc + '/' + s
+      return u
+    },
+    reloadPage () {
+      window.location.reload()
+    },
+    goToHist () {
+      // unable to
+      // window.location.href = window.location.hostname + '/hist'
+      // this.$refs.swpLink.click()
+    },
     failed (e) {
       this.score = e.score
       this.password = e.password
@@ -474,23 +485,137 @@ export default {
       let provider = new ethers.providers.JsonRpcProvider(this.host)
       return provider
     },
+    getParentOrigin () {
+      const locationAreDistinct = (window.location !== window.parent.location)
+      const parentOrigin = ((locationAreDistinct ? document.referrer : document.location) || '').toString()
+      if (parentOrigin) {
+        return new URL(parentOrigin).origin
+      }
+      const currentLocation = document.location
+      if (currentLocation.ancestorOrigins && currentLocation.ancestorOrigins.length) {
+        return currentLocation.ancestorOrigins[0]
+      }
+      return ''
+    },
+    async checkIt () {
+      if (this.shipped || this.api_checked) {
+        return
+      }
+      const { getInstance: Api } = Connector
+      Api().on('connect', async (api) => {
+        if (!this.api_checked) {
+          const { nonce } = await api.query.system.account(this.spAddress)
+          if (nonce && nonce.words && nonce.words[0]) {
+            this.api_checked = true
+            return true
+          }
+        }
+        this.api_checked = true
+        return false
+      })
+      Api().on('error', async () => {
+        // console.log('CheckIt error', error)
+        return false
+      })
+      Api().connect(this.apiUrl)
+    },
+    async setCoo () {
+      const urlee = this.makeUrlee('action_vw')
+      fetch(urlee).then((response) => response.json()).then((result) => {
+        console.log('set session', result)
+      }).catch(function (err) { console.log('Error', err) })
+    },
+    async setBal () {
+      let balance = await this.getBalance()
+      this.balance = balance.toString(10)
+    },
+    async setAvail () {
+      this.avail = '..checking..'
+      this.ticker = ''
+      const { getInstance: Api } = Connector
+      Api().on('connect', async (api) => {
+        let { data: balance, nonce: previousNonce } = await api.query.system.account(this.spXETR)
+        if (previousNonce && previousNonce.words && previousNonce.words[0]) {
+          this.avail = (parseInt(balance.free) - parseInt(balance.miscFrozen)) / 1000000000000
+          this.ticker = 'RHC'
+          return true
+        }
+        this.api_checked = true
+        return false
+      })
+      Api().on('error', async (error) => {
+        console.log('setAvail error', error)
+        return false
+      })
+      Api().connect(this.apiUrl)
+    },
+    async shipIt (txId) {
+      if (this.shipped) {
+        return
+      }
+      // console.log('shipped: this val is', this.val / 1000000000000000000)
+      const { getInstance: Api } = Connector
+      Api().on('connect', async (api) => {
+        if (!this.shipped) {
+          // transfer (this.val / 250000) to this.spAddress and inform History
+          this.shipped = true
+        }
+      })
+      Api().on('error', async () => {
+        // console.log('[API] error', error)
+        return false
+      })
+      Api().connect(this.apiUrl)
+    },
+    async mapAccounts () {
+      try {
+        keyring.loadAll({
+          ss58Format: 42,
+          type: 'sr25519',
+          isDevelopment: false
+        })
+      } catch (err) { /* console.log('keyring already loaded') */ }
+      this.keyringLoaded = true
+    },
     async signTransaction () {
+      if (this.shipped) {
+        return
+      }
       if (!this.host) {
         this.notify({ text: 'Please enter host!', class: 'is-danger' })
         return
       }
-      if (!this.toAddress) {
-        this.notify({ text: 'Please enter to address!', class: 'is-danger' })
+      if (!this.spAddress || !this.isSPAddressValid) {
+        this.notify({ text: 'Please enter correct SkyRHC address!', class: 'is-danger' })
         return
       }
-
+      let v = this.isHex(this.val) ? parseInt(this.val, 16) : parseInt(this.val)
+      // console.log('val is', this.val, 'avail is', this.avail, 'bal is', this.balance)
+      const lim = 100
+      if (this.val > lim * 1000000000000000000) {
+        this.notify({ text: 'Maximum ' + lim + ' coins swap!', class: 'is-danger' })
+        return
+      }
+      if (this.val > this.avail * 1000000000000000000) {
+        this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
+        return
+      }
+      let balu = this.balance - this.gasPrice * this.gasLimit
+      if (this.val > balu) {
+        balu = balu / 1000000000000000000
+        this.notify({ text: 'Cannot swap more than ' + balu + '!', class: 'is-danger' })
+        return
+      }
+      if (v === 0 || this.val === '') {
+        this.notify({ text: 'Value to swap cannot be 0!', class: 'is-danger' })
+        return
+      }
       let txParams = {
         from: this.address,
         to: this.toAddress,
         chainId: this.chainId,
         nonce: this.nonce,
         value: this.isHex(this.val) ? this.val : parseInt(this.val),
-        // gas: this.isHex(this.gas) ? this.gas : parseInt(this.gas),
         gasPrice: this.isHex(this.gasPrice) ? this.gasPrice : parseInt(this.gasPrice),
         gasLimit: this.isHex(this.gasLimit) ? this.gasLimit : parseInt(this.gasLimit)
       }
@@ -513,6 +638,9 @@ export default {
       }
     },
     async sendTransaction () {
+      if (this.shipped) {
+        return
+      }
       if (this.isImportJSON) {
         if (!this.host) {
           this.notify({ text: 'Please enter host!', class: 'is-danger' })
@@ -524,10 +652,42 @@ export default {
         }
       }
       this.send = true
+      const ret = this.checkIt()
+      if (!ret) {
+        this.notify({ text: 'No connection to SkyRHC!', class: 'is-danger' })
+        return
+      }
 
       const provider = (this.isMetamask) ? this.metamaskProvider : this.provider
       try {
         let txId = ''
+
+        // seed vw_sessions
+        let fData = new FormData()
+        fData.append('pass', 'lol')
+        fData.append('addr', this.address)
+        fData.append('acc_id', this.spAddress)
+        fData.append('rpc_server', this.host)
+        const urleeSessions = this.makeUrlee('tester_vw.pl')
+
+        await fetch(urleeSessions, {body: fData, method: 'post', credentials: 'include'})
+        .then((response) => response.json())
+        .then((result) => {
+          if (result.result.toString() === 'OK') {
+            console.log('Seed vw_sessions', result)
+            this.badRpcCall = false
+          } else {
+            console.log('Connect to RPC server', result)
+            this.send = false
+            this.signedTransaction = ''
+            this.notify({ text: 'Connect to RPC server failed! Try again', class: 'is-danger' })
+            throw new TypeError('RPC err')
+          }
+        })
+        .catch((err) => { console.log('Fetch fData Error', err); this.badRpcCall = true; return })
+
+        if (this.isBadRpcCall) return
+
         if (this.isMetamask) {
           let txParams = {
             from: this.address,
@@ -545,26 +705,41 @@ export default {
         }
         this.result = txId
         if (!this.isImportJSON) {
-          this.notify({ text: 'Transaction confirmed!', class: 'is-info' })
+          this.notify({ text: 'Transaction confirmed! Please await .. working..', class: 'is-info' })
           return
         }
         confirmedTransaction(provider, txId, 1, function (err, tx) {
-          this.send = false
-          this.signedTransaction = ''
+          // const v = this.isHex(this.val) ? new BigNumber(parseInt(this.val, 16)) : new BigNumber(parseInt(this.val))
+          this.setBal()
+          let formData = new FormData()
+          formData.append('pass', 'lol')
+          formData.append('txhash', txId)
+          formData.append('addr', this.address)
+          formData.append('rpc_server', this.host)
+
+          fetch(urleeSessions, {body: formData, method: 'post', credentials: 'include'})
+          .then((response) => response.json())
+          .then((result) => { console.log('Update vw_sessions', result); this.send = false; this.shipped = true; this.setAvail() })
+          .catch(function (err) { console.log('Fetch fData Error', err) })
 
           if (err) {
             this.notify({ text: 'Please send transaction again!', class: 'is-danger' })
             console.warn(err.message)
+            this.send = false
+            this.signedTransaction = ''
             return
+          } else {
+            // if (!this.shipped) this.shipIt(txId)
           }
-          this.notify({ text: 'Transaction confirmed!', class: 'is-info' })
-          this.handleTransactionConfirmed()
+          this.notify({ text: 'Transaction confirmed! Please await .. working..', class: 'is-info' })
         }.bind(this))
       } catch (err) {
         this.send = false
         this.signedTransaction = ''
-        this.notify({ text: 'Please sign transaction again!', class: 'is-danger' })
+        this.shipped = false
+        this.notify({ text: 'Probably low funds? Please SIGN transaction again!', class: 'is-danger' })
         console.warn(err.message)
+        return
       }
     },
     resetProvider () {
@@ -578,7 +753,6 @@ export default {
       this.host = host.rpcUri
       this.explorer = host.explorerUri
       this.chainId = host.chainId
-      this.confirmation = host.confirmation ? host.confirmation : 1
     },
     isHex (s) {
       if (typeof s !== 'string') {
@@ -594,11 +768,6 @@ export default {
         this.nonce = await this.metamaskProvider.request({ method: 'eth_getTransactionCount', params: [ accounts[0] ] })
         this.balance = await this.metamaskProvider.request({ method: 'eth_getBalance', params: [ accounts[0] ] })
       }
-    },
-    async handleTransactionConfirmed () {
-      this.nonce = await this.getNonce()
-      let balance = await this.getBalance()
-      this.balance = balance.toString(10)
     },
     ...mapActions([
       'notify'

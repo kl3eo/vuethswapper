@@ -8,7 +8,7 @@ import router from './router'
 Vue.config.productionTip = false
 
 // rewrite document title
-const APP_NAME = '*** Vue Ethwallet ***'
+const APP_NAME = '*** Etherswap ***'
 
 router.afterEach(function (to, from) {
   var title = to.meta.title || 'Wallet'
