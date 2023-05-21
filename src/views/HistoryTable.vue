@@ -68,7 +68,8 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style>
+@media screen and (min-width: 1024px) {
 .swap-data {
   display: flex;
   align-items: center;
@@ -93,5 +94,35 @@ export default {
   flex-grow: 1;
   font-size: 18px;
 }
+}
+@media screen and (max-width: 1024px) {
+.swap-data {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  margin-left: 0px;
+  border-bottom: 2px solid #ccc;
+  padding: 5px;
+  max-width: 360px;
+  mix-width: 300px;
+}
 
+.swap-stats {
+  flex-grow: 8;
+  text-align: left;
+  padding-left: 0px;
+  font-size:12px;
+}
+
+.swap-stats .sender {
+  font-size: 16px;
+}
+
+.swap-dtm {
+  flex-grow: 1;
+  font-size: 12px;
+  max-width: 320px;
+  mix-width: 300px;
+}
+}
 </style>
