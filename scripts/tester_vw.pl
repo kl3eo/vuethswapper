@@ -8,13 +8,13 @@ use JSON;
 my $scriptURL = CGI::url();
 my $a = $ENV{'REMOTE_ADDR'};
 
-my $ddositsuko = ddos_check($scriptURL);
+my $ddositsuko = ddos_check($scriptURL, $a);
 
 my $par = 11;
 
 if ($ddositsuko > $par) {
 	exit if ($ddositsuko > $par+1); #important not to apply again
-	my $applied = apply_firewall();
+	my $applied = apply_firewall($a);
 	
 	if ($applied) {
 
@@ -43,6 +43,8 @@ my $rpc_server = defined($query->param('rpc_server')) ? $query->param('rpc_serve
 
 exit unless length($rpc_server);
 
+my $rpc = $rpc_server eq "https://rpc.callisto.network" ? "callisto" : $rpc_server eq "https://node.expanse.tech" ? "expanse" : '';
+
 my $cmd = '';
 
 my $doghouse = "lol";
@@ -56,11 +58,30 @@ $dbconn->{LongReadLen} = 16384;
 if (length($txhash) && $pass eq "lol") {
 
  my $curr = '';
+ my $need_u = 1;
+ 
  eval {
   local $SIG{ALRM} = sub { my %hash = ('result' => 'ERR'); my $j = encode_json(\%hash); print $j; die "alarm\n" };
   alarm 5;
-  $curr = `node /opt/nvme/web3/bnum.js --server=$rpc_server`;
-  $curr =~ s/(\r|\n)//g;
+
+  if (-f "/tmp/bnum_w$rpc") {
+    my $c = `date +%s`;
+    my $c1 = `date +%s -r /tmp/bnum_w$rpc`;
+    my $d = $c - $c1;
+    $need_u = 0 if ($d < 10);
+  }
+  
+  if ($need_u){
+    $curr = `node /opt/nvme/web3/bnum.js --server=$rpc_server`;
+    $curr =~ s/(\r|\n)//g;
+    if ($curr =~ /^\d+$/) {
+      system("echo $curr > /tmp/bnum_w$rpc");
+    }
+  } else {
+    $curr = `cat /tmp/bnum_w$rpc`;
+    $curr =~ s/(\r|\n)//g;
+  }
+  
   alarm 0;
  };
   
@@ -124,19 +145,55 @@ if (length($txhash) && $pass eq "lol") {
 
 #check both blockchains are alive
  my $res = ''; my $res1 = '';
+ my $need_u = 1; my $need_u1 = 1;
+ 
  eval {
   local $SIG{ALRM} = sub { my %hash = ('result' => 'ERR'); my $j = encode_json(\%hash); print $j; die "alarm\n" };
   alarm 5;
-  $res = `node /opt/nvme/web3/bnum.js --server=$rpc_server`;
-  $res =~ s/(\r|\n)//g;
+
+  if (-f "/tmp/bnum_w$rpc") {
+    my $c = `date +%s`;
+    my $c1 = `date +%s -r /tmp/bnum_w$rpc`;
+    my $d = $c - $c1;
+    $need_u = 0 if ($d < 10);
+  }
+  
+  if ($need_u){
+    $res = `node /opt/nvme/web3/bnum.js --server=$rpc_server`;
+    $res =~ s/(\r|\n)//g;
+    if ($res =~ /^\d+$/) {
+      system("echo $res > /tmp/bnum_w$rpc");
+    }
+  } else {
+    $res = `cat /tmp/bnum_w$rpc`;
+    $res =~ s/(\r|\n)//g;
+  }
+  
   alarm 0;
  };
 
  eval {
   local $SIG{ALRM} = sub { my %hash = ('result' => 'ERR'); my $j = encode_json(\%hash); print $j; die "alarm\n" };
   alarm 5;
-  $res1 = `node /opt/nvme/polka/bnum.js`;
-  $res1 =~ s/(\r|\n)//g;
+
+  if (-f "/tmp/bnum_p") {
+    my $c = `date +%s`;
+    my $c1 = `date +%s -r /tmp/bnum_p`;
+    my $d = $c - $c1;
+    $need_u = 0 if ($d < 10);
+  }
+  
+  if ($need_u){
+    $res1 = `node /opt/nvme/polka/bnum.js`;
+    $res1 =~ s/(\r|\n)//g;
+    if ($res1 =~ /^\d+$/) {
+      system("echo $res1 > /tmp/bnum_p");
+    }
+  } else {
+    $res1 = `cat /tmp/bnum_p`;
+    $res1 =~ s/(\r|\n)//g;
+  }
+  
   alarm 0;
  };
     
@@ -164,6 +221,7 @@ exit;
 sub ddos_check {
 
 my $url = shift;
+my $a = shift;
 
 my $checklist = "/var/www/html/cp/handlers/checklist";
 
@@ -182,9 +240,7 @@ return $counter;
 
 sub apply_firewall {
 
-my $who = shift;
-
-my $applied = 0;
+my $a = shift;
 
 system("sudo /usr/local/bin/ip_apply $a");
 print STDERR "sudo /usr/local/bin/ip_apply $a\n";
