@@ -132,7 +132,7 @@
 
       <div class="panel-block">
         <div class="container">
-          <ether-units v-bind:valueLabel="'Gas Price'" v-bind:valuePlaceholder="'Gas Price'" v-on:success="(e) => {gasPrice = e.value * e.unit}" />
+          <ether-units v-bind:valueLabel="'Gas Price (e.g. 20000000000 wei)'" v-bind:valuePlaceholder="'20 Gwei'" v-on:success="(e) => {gasPrice = e.value * e.unit}" />
         </div>
       </div>
 
@@ -145,7 +145,7 @@
           
             <div class="column is-third-quarter">
               <div class="control">
-                <input id="gas-limit" class="input" type="text" v-model="gasLimit" placeholder="Gas Limit" v-bind:class="{'is-success': gasLimit}">
+                <input id="gas-limit" class="input" type="text" v-model="gasLimit" placeholder="21000" v-bind:class="{'is-success': gasLimit}">
                 <p class="help is-success" v-if="gasLimit">Gas limit is valid</p>
               </div>
             </div>
@@ -288,8 +288,8 @@ export default {
       explorer: '',
       toAddress: '',
       val: '',
-      gasPrice: '',
-      gasLimit: '',
+      gasPrice: '20000000000',
+      gasLimit: '21000',
       gas: '',
       data: '',
       result: '',
@@ -367,6 +367,10 @@ export default {
       let provider = this.provider
       let nonce = await provider.getTransactionCount(this.address)
       return nonce
+    },
+    async setBal () {
+      let balance = await this.getBalance()
+      this.balance = balance.toString(10)
     },
     async importWallet () {
       if (this.walletType === '1') {
@@ -550,6 +554,7 @@ export default {
         confirmedTransaction(provider, txId, 1, function (err, tx) {
           this.send = false
           this.signedTransaction = ''
+          this.setBal()
 
           if (err) {
             this.notify({ text: 'Please send transaction again!', class: 'is-danger' })
