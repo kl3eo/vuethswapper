@@ -26,19 +26,26 @@ config.hosts = {
     explorerUri: 'https://rinkeby.etherscan.io',
     chainId: 4
   },
-*/
   callisto: {
     test: false,
     rpcUri: 'https://rpc.callisto.network',
     explorerUri: 'https://explorer.callisto.network/',
     chainId: 820
   },
+*/
   expanse: {
     test: false,
     rpcUri: 'https://node.expanse.tech',
     explorerUri: 'https://explorer.expanse.tech/',
     chainId: 2
+  },
+  expClassic: {
+    test: false,
+    rpcUri: 'https://africa.room-house.com',
+    explorerUri: 'https://expanscout.com/',
+    chainId: 2
   }
+
 
 }
 

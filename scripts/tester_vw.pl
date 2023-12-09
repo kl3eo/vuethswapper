@@ -43,7 +43,7 @@ my $rpc_server = defined($query->param('rpc_server')) ? $query->param('rpc_serve
 
 exit unless length($rpc_server);
 
-my $rpc = $rpc_server eq "https://rpc.callisto.network" ? "callisto" : $rpc_server eq "https://node.expanse.tech" ? "expanse" : '';
+my $rpc = $rpc_server eq "https://rpc.callisto.network" ? "callisto" : $rpc_server eq "https://node.expanse.tech" ? "expanse" : $rpc_server =~ /room-house.com/ ? "expClassic" : '';
 
 my $cmd = '';
 

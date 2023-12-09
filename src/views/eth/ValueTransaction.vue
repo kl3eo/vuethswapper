@@ -16,7 +16,7 @@
                   <option value="0">Choose Wallet</option>
                   <option value="1">Import from json</option>
                   <option value="2">Metamask</option>
-                  <option value="3">Ledger</option>
+                  <!-- option value="3">Ledger</option -->
                 </select>
               </div>
             </div>
@@ -132,7 +132,19 @@
 
       <div class="panel-block">
         <div class="container">
-          <ether-units v-bind:valueLabel="'Gas Price (e.g. 20000000000 wei)'" v-bind:valuePlaceholder="'20 Gwei'" v-on:success="(e) => {gasPrice = e.value * e.unit}" />
+          <!-- ether-units v-bind:valueLabel="'Gas Price (e.g. 20000000000 wei)'" v-bind:valuePlaceholder="'20000000000'" v-on:success="(e) => {gasPrice = e.value}" / -->
+          <div class="columns">
+            <div class="column is-one-quarter">
+              <label class="label" for="gas-limit">Gas Price</label>
+            </div>
+          
+            <div class="column is-third-quarter">
+              <div class="control">
+		<input id="gas-price" class="input" type="text" v-model="gasPrice" placeholder="20000000000" v-bind:class="{'is-success': gasPrice}">
+		<p class="help is-success" v-if="gasPrice">Gas price is valid</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -238,7 +250,7 @@
 
     <div class="panel-block has-text-centered">
       <div class="container">
-        <button class="button is-primary" v-bind:disabled="working" v-on:click.prevent.self="importWallet" v-if="walletType !== '0'">
+        <button class="button is-primary" v-bind:disabled="working" v-on:click.prevent.self="importWallet" v-if="walletType !== '0' && !address">
           <template v-if="isImportJSON">
             Import Wallet
           </template>
@@ -486,14 +498,13 @@ export default {
         this.notify({ text: 'Please enter to address!', class: 'is-danger' })
         return
       }
-
+      this.nonce = await this.getNonce()
       let txParams = {
         from: this.address,
         to: this.toAddress,
         chainId: this.chainId,
         nonce: this.nonce,
         value: this.isHex(this.val) ? this.val : parseInt(this.val),
-        // gas: this.isHex(this.gas) ? this.gas : parseInt(this.gas),
         gasPrice: this.isHex(this.gasPrice) ? this.gasPrice : parseInt(this.gasPrice),
         gasLimit: this.isHex(this.gasLimit) ? this.gasLimit : parseInt(this.gasLimit)
       }
@@ -501,7 +512,7 @@ export default {
         txParams.data = this.data
       }
       let valueTx = yoethwallet.tx.valueTx(txParams)
-
+      // console.log('here wallet type is ', this.walletType)
       if (this.isImportJSON) {
         valueTx.sign(this.keystore.getPrivateKey())
 
@@ -543,12 +554,13 @@ export default {
             txParams.data = this.data
           }
           txId = await this.metamaskProvider.request({ method: 'eth_sendTransaction', params: [ txParams ] })
+          this.send = false
         } else {
           txId = await provider.send('eth_sendRawTransaction', [ this.signedTransaction ])
         }
         this.result = txId
         if (!this.isImportJSON) {
-          this.notify({ text: 'Transaction confirmed!', class: 'is-info' })
+          this.notify({ text: 'Transaction was submitted. Please await confirmation', class: 'is-info' })
           return
         }
         confirmedTransaction(provider, txId, 1, function (err, tx) {

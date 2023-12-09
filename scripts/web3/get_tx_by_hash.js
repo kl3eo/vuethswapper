@@ -4,7 +4,8 @@ const server = args['server']
 
 async function main () {
 const Web3 = require('web3')
-const web3 = server === 'https://rpc.callisto.network' ? new Web3(new Web3.providers.HttpProvider('https://rpc.callisto.network')) : new Web3(new Web3.providers.HttpProvider('https://node.expanse.tech'))
+//const web3 = server === 'https://rpc.callisto.network' ? new Web3(new Web3.providers.HttpProvider('https://rpc.callisto.network')) : new Web3(new Web3.providers.HttpProvider('https://node.expanse.tech'))
+const web3 = new Web3(new Web3.providers.HttpProvider(server))
 
 const A = "0x" + String(th_arg)
 const j = await web3.eth.getTransaction(A);
