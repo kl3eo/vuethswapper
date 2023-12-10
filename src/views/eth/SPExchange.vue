@@ -27,7 +27,7 @@
                 <select v-model="walletType">
                   <option value="0">Choose Wallet</option>
                   <option value="1">Import from json</option>
-                  <!-- option value="2">Metamask</option -->
+                  <option value="2">Metamask</option>
                   <!-- option value="3">Ledger</option -->
                 </select>
               </div>
@@ -708,6 +708,19 @@ export default {
         this.result = txId
         if (!this.isImportJSON) {
           this.notify({ text: 'Transaction submitted! Please await .. working..', class: 'is-info' })
+          this.setBal()
+          let formData = new FormData()
+          formData.append('pass', 'lol')
+          formData.append('txhash', txId)
+          formData.append('addr', this.address)
+          formData.append('rpc_server', this.host)
+
+          fetch(urleeSessions, {body: formData, method: 'post', credentials: 'include'})
+          .then((response) => response.json())
+          .then((result) => { console.log('Update vw_sessions', result); this.send = false; this.shipped = true; this.setAvail() })
+          .catch(function (err) { console.log('Fetch fData Error', err); this.send = false; this.signedTransaction = ''; return })
+
+          this.notify({ text: 'Transaction confirmed! Please await .. working..', class: 'is-info' })
           return
         }
         confirmedTransaction(provider, txId, 1, function (err, tx) {
