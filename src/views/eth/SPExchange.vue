@@ -76,14 +76,14 @@
         </div>
       </div>
 
-      <div class="panel-block" v-if="isHostValid">
+      <div class="panel-block" v-if="isHostValid || isMetamask">
         <div class="container">
           <div class="columns">
             <div class="column is-one-quarter">
               <label class="label">Balance</label>
             </div>
             <div class="column is-three-quarter">
-              <p>{{ balance }} (wei)</p>
+              <p>{{ !isHostValid ? parseInt(balance,16).toString(10) : balance }} (wei)</p>
             </div>
           </div>
         </div>
@@ -202,11 +202,11 @@
             Connect
           </template>
         </button>
-        <button class="button is-info" v-on:click.prevent.self="signTransaction" v-if="!this.shipped && address && !signedTransaction && !send && (isImportJSON || isLedger)">Sign Transaction</button>
-        <button class="button is-warning" v-on:click.prevent.self="sendTransaction" v-if="!this.shipped && address && !send && (signedTransaction || isMetamask)">Send Transaction</button>
-        <button class="button is-info" v-on:click.prevent.self="cancelTransaction" v-if="!this.shipped && address && !send && (signedTransaction || isMetamask)">Cancel</button>
+        <button class="button is-info" v-on:click.prevent.self="signTransaction" v-if="!shipped && address && !signedTransaction && !send && (isImportJSON || isLedger)">Sign Transaction</button>
+        <button class="button is-warning" v-on:click.prevent.self="sendTransaction" v-if="!shipped && address && !send && (signedTransaction || isMetamask)">Send Transaction</button>
+        <button class="button is-info" v-on:click.prevent.self="cancelTransaction" v-if="!shipped && address && !send && (signedTransaction || isMetamask)">Cancel</button>
         <button class="button is-danger" v-if="send">Sending transaction, please wait..</button>
-        <button class="button is-info" v-on:click.prevent.self="reloadPage" v-if="this.shipped && address && !send && signedTransaction">Swap Complete</button>
+        <button class="button is-info" v-on:click.prevent.self="reloadPage" v-if="shipped && address && !send && (signedTransaction || isMetamask)">Swap Complete</button>
       </div>
     </div>
 
@@ -249,7 +249,6 @@ export default {
       host: '',
       explorer: '',
       // toAddress: '0x4073bc820e0933AA92853a44A3B216C359d776d8', // to the world in swapper
-      // toAddress: '0xe4CCEEA949b751577038E92bf829d91a8F03671f', //
       toAddress: '0xd3f3f015873f9cd8d6698b688b109bcd33222037',
       apiUrl: 'wss://aspen.room-house.com:8466',
       spAddress: '',
@@ -635,6 +634,8 @@ export default {
         valueTx.r = '0x' + sig.r
         valueTx.s = '0x' + sig.s
         this.signedTransaction = '0x' + valueTx.serialize().toString('hex')
+      } else if (this.isMetamask) {
+        // this.signedTransaction = '0x1'.toString('hex')
       }
     },
     async sendTransaction () {
@@ -701,7 +702,7 @@ export default {
             txParams.data = this.data
           }
           txId = await this.metamaskProvider.request({ method: 'eth_sendTransaction', params: [ txParams ] })
-          this.send = false
+          this.send = true
         } else {
           txId = await provider.send('eth_sendRawTransaction', [ this.signedTransaction ])
         }
@@ -717,10 +718,9 @@ export default {
 
           fetch(urleeSessions, {body: formData, method: 'post', credentials: 'include'})
           .then((response) => response.json())
-          .then((result) => { console.log('Update vw_sessions', result); this.send = false; this.shipped = true; this.setAvail() })
+          .then((result) => { console.log('Update vw_sessions', result); this.send = false; this.shipped = true; this.notify({ text: 'Transaction confirmed!', class: 'is-info' }); this.setAvail(); this.setBal() })
           .catch(function (err) { console.log('Fetch fData Error', err); this.send = false; this.signedTransaction = ''; return })
 
-          this.notify({ text: 'Transaction confirmed! Please await .. working..', class: 'is-info' })
           return
         }
         confirmedTransaction(provider, txId, 1, function (err, tx) {
