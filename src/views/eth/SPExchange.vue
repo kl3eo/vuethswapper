@@ -708,20 +708,33 @@ export default {
         }
         this.result = txId
         if (!this.isImportJSON) {
+          // provider.getTransactionReceipt(txId).then((receipt) => {
           this.notify({ text: 'Transaction submitted! Please await .. working..', class: 'is-info' })
-          this.setBal()
-          let formData = new FormData()
-          formData.append('pass', 'lol')
-          formData.append('txhash', txId)
-          formData.append('addr', this.address)
-          formData.append('rpc_server', this.host)
+          // const receipt = await this.metamaskProvider.request({ method: 'eth_getTransactionReceipt', params: [ txId ] })
+          let receipt = null
+          while (!receipt) receipt = await provider.send('eth_getTransactionReceipt', [ txId ])
+          while (!receipt.result) receipt = await provider.send('eth_getTransactionReceipt', [ txId ])
+          console.log('receipt', receipt.result)
+          if (parseInt(receipt.result.status, 16) === 1) {
+            this.setBal()
+            let formData = new FormData()
+            formData.append('pass', 'lol')
+            formData.append('txhash', receipt.result.transactionHash)
+            formData.append('addr', this.address)
+            formData.append('rpc_server', this.host)
 
-          fetch(urleeSessions, {body: formData, method: 'post', credentials: 'include'})
-          .then((response) => response.json())
-          .then((result) => { console.log('Update vw_sessions', result); this.send = false; this.shipped = true; this.notify({ text: 'Transaction confirmed!', class: 'is-info' }); this.setAvail(); this.setBal() })
-          .catch(function (err) { console.log('Fetch fData Error', err); this.send = false; this.signedTransaction = ''; return })
-
+            fetch(urleeSessions, {body: formData, method: 'post', credentials: 'include'})
+            .then((response) => response.json())
+            .then((result) => { console.log('Update vw_sessions', result); this.send = false; this.shipped = true; this.notify({ text: 'Transaction confirmed!', class: 'is-info' }); this.setAvail(); this.setBal() })
+            .catch(function (err) { console.log('Fetch fData Error', err); this.send = false; this.signedTransaction = ''; return })
+          } else {
+            this.notify({ text: 'Transaction failed!', class: 'is-danger' })
+            this.send = false
+            this.signedTransaction = ''
+            this.shipped = false
+          }
           return
+          // })
         }
         confirmedTransaction(provider, txId, 1, function (err, tx) {
           // const v = this.isHex(this.val) ? new BigNumber(parseInt(this.val, 16)) : new BigNumber(parseInt(this.val))
