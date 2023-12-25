@@ -44,7 +44,7 @@ export default {
   },
   computed: {
     isPasswordValid () {
-      return this.score >= 3 && !/(?:[\s]+)/.test(this.password)
+      return this.score >= 0 && !/(?:[\s]+)/.test(this.password)
     },
     emptyPassword () {
       return this.password === '' || this.password === null || this.password === undefined
@@ -70,7 +70,7 @@ export default {
       this.score = score
       this.feedback = result.feedback
 
-      if (score < 3) {
+      if (score < 0) {
         this.$emit('failed', result)
       } else if (/(?:[\s]+)/.test(this.password)) {
         result = {

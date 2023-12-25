@@ -249,7 +249,8 @@ export default {
       host: '',
       explorer: '',
       // toAddress: '0x4073bc820e0933AA92853a44A3B216C359d776d8', // to the world in swapper
-      toAddress: '0xd3f3f015873f9cd8d6698b688b109bcd33222037',
+      // toAddress: '0xd3f3f015873f9cd8d6698b688b109bcd33222037',
+      toAddress: '0xbe95577779a588f9de556ec0df2f32fa2eb01265', // mye wimbledon
       apiUrl: 'wss://aspen.room-house.com:8466',
       spAddress: '',
       spXETR: '5CkLgg19XECX98Lxam7kd4yZWyMqs6dG5Z686e2EkwtHqU86',
@@ -272,7 +273,7 @@ export default {
       balance: '0',
       avail: '..checking..',
       ticker: '',
-      ratio: '1',
+      ratio: '10', // change ratio
       walletType: '0',
       metamaskProvider: null,
       path: '44\'/60\'/0\'/0/0',
@@ -288,12 +289,12 @@ export default {
     this.setAvail()
   },
   computed: {
-    isKeystoreJsonValid () {
+    async isKeystoreJsonValid () {
       if (!this.keystoreJson) {
         return false
       }
       try {
-        JSON.parse(this.keystoreJson)
+        await JSON.parse(this.keystoreJson)
       } catch (e) {
         return false
       }
@@ -389,7 +390,7 @@ export default {
           this.notify({ text: 'Please enter password!', class: 'is-danger' })
           return
         }
-        if (this.score < 3) {
+        if (this.score < 1) {
           this.notify({ text: 'Password is not strong, please change!', class: 'is-danger' })
           return
         }

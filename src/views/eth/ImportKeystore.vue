@@ -85,12 +85,12 @@ export default {
     }
   },
   computed: {
-    isKeystoreJsonValid () {
+    async isKeystoreJsonValid () {
       if (!this.keystoreJson) {
         return false
       }
       try {
-        JSON.parse(this.keystoreJson)
+        await JSON.parse(this.keystoreJson)
       } catch (e) {
         return false
       }
@@ -115,7 +115,7 @@ export default {
         this.notify({ text: 'Please enter password!', class: 'is-danger' })
         return
       }
-      if (this.score < 3) {
+      if (this.score < 1) {
         this.notify({ text: 'Password is not strong, please change!', class: 'is-danger' })
         return
       }
