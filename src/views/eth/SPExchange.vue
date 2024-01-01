@@ -273,7 +273,7 @@ export default {
       balance: '0',
       avail: '..checking..',
       ticker: '',
-      ratio: '10', // change ratio
+      ratio: 'N', // change ratio
       walletType: '0',
       metamaskProvider: null,
       path: '44\'/60\'/0\'/0/0',
@@ -369,7 +369,8 @@ export default {
         return ''
       }
       let provider = this.provider
-      let balance = await provider.getBalance(this.address)
+      let balance = this.metamaskProvider ? await this.metamaskProvider.request({ method: 'eth_getBalance', params: [ this.address ] }) : await provider.getBalance(this.address)
+      balance = this.isHex(balance) ? parseInt(balance, 16) : balance
       return balance
     },
     async getNonce () {
@@ -423,6 +424,12 @@ export default {
           if (metamaskProvider === window.ethereum) {
             this.metamaskProvider = metamaskProvider
             this.chainId = await metamaskProvider.request({ method: 'eth_chainId' })
+            if (this.chainId !== '0x2') {
+              this.notify({ text: 'Please use Expanse!', class: 'is-danger' })
+              throw new TypeError('Wrong chain')
+            } else {
+              this.ratio = 10 // change ratio
+            }
             const accounts = await metamaskProvider.request({ method: 'eth_requestAccounts' })
             this.handleAccountsChange(accounts)
             // register events
@@ -782,6 +789,7 @@ export default {
       this.host = host.rpcUri
       this.explorer = host.explorerUri
       this.chainId = host.chainId
+      this.ratio = this.host === 'https://paris.room-house.com' ? 5 : 10
     },
     isHex (s) {
       if (typeof s !== 'string') {
