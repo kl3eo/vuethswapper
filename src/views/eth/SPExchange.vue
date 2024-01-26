@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <h2 class="panel-heading">SkyRHC Swap 1:{{ ratio }}</h2>
+    <h2 class="panel-heading">SkyRHC Swap 1:20 Exp; 1:1 ExpC</h2>
 
     <div class="panel-block">
       <div class="container">
@@ -69,8 +69,8 @@
               <label class="label">Address</label>
             </div>
             <div class="column is-three-quarter">
-              <p v-if="!isHostValid">{{ address }}</p>
-              <p v-if="isHostValid"><a v-bind:href="`${this.explorer}/address/${this.address}`" target="_blank">{{ address }}</a></p>
+              <p v-if="!isHostValid || !shipped">{{ address }}</p>
+              <p v-if="isHostValid && shipped"><a v-bind:href="`${this.explorer}/address/${this.address}`" target="_blank">{{ address }}</a></p>
             </div>
           </div>
         </div>
@@ -175,7 +175,7 @@
         </div>
       </div>
 
-      <div class="panel-block" v-if="result">
+      <div class="panel-block" v-if="result && shipped">
         <div class="container">
           <div class="columns">
             <div class="column is-one-quarter">
@@ -428,7 +428,7 @@ export default {
               this.notify({ text: 'Please use Expanse!', class: 'is-danger' })
               throw new TypeError('Wrong chain')
             } else {
-              this.ratio = 10 // change ratio
+              this.ratio = 20 // change ratio
             }
             const accounts = await metamaskProvider.request({ method: 'eth_requestAccounts' })
             this.handleAccountsChange(accounts)
@@ -603,7 +603,11 @@ export default {
         this.notify({ text: 'Maximum ' + lim + ' coins swap!', class: 'is-danger' })
         return
       } */
-      if (this.val > this.avail * 1000000000000000000) {
+      if (this.val > this.avail * 50000000000000000 && this.host !== 'https://paris.room-house.com') { // 1:20
+        this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
+        return
+      }
+      if (this.val > this.avail * 1000000000000000000 && this.host === 'https://paris.room-house.com') { // 1:1
         this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
         return
       }
@@ -647,6 +651,10 @@ export default {
       }
     },
     async sendTransaction () {
+      if (this.val > this.avail * 50000000000000000) { // 1:20
+        this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
+        // return // for Metamask and ExpC
+      }
       if (this.shipped) {
         return
       }
@@ -672,7 +680,8 @@ export default {
         let txId = ''
 
         // seed vw_sessions
-        this.host = (this.isMetamask) ? 'https://africa.room-house.com' : this.host // hack ash
+        this.host = (this.isMetamask) ? 'https://wien.room-house.com' : this.host // hack ash
+        this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
         let fData = new FormData()
         fData.append('pass', 'lol')
         fData.append('addr', this.address)
@@ -733,7 +742,7 @@ export default {
 
             fetch(urleeSessions, {body: formData, method: 'post', credentials: 'include'})
             .then((response) => response.json())
-            .then((result) => { console.log('Update vw_sessions', result); this.send = false; this.shipped = true; this.notify({ text: 'Transaction confirmed!', class: 'is-info' }); this.setAvail(); this.setBal() })
+            .then((result) => { console.log('Update vw_sessions', result); if (result && result.net) this.explorer = 'https://expc.room-house.com'; this.send = false; this.shipped = true; this.notify({ text: 'Transaction confirmed!', class: 'is-info' }); this.setAvail(); this.setBal() })
             .catch(function (err) { console.log('Fetch fData Error', err); this.send = false; this.signedTransaction = ''; return })
           } else {
             this.notify({ text: 'Transaction failed!', class: 'is-danger' })
@@ -787,9 +796,9 @@ export default {
       let host = config.hosts[e.target.value]
 
       this.host = host.rpcUri
-      this.explorer = host.explorerUri
+      this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
       this.chainId = host.chainId
-      this.ratio = this.host === 'https://paris.room-house.com' ? 5 : 10
+      this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 20
     },
     isHex (s) {
       if (typeof s !== 'string') {

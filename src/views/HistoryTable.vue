@@ -4,6 +4,9 @@
     <div v-for="swapData in swapDataList" :key="swapData.id" class="swap-data">
       <div class="swap-stats">
         <div>
+          <span>ID:</span>&nbsp;<span>{{swapData.id}}</span>
+        </div>
+        <div>
           <span>Hash send:</span>&nbsp;<span>{{swapData.tx_sender}}</span>
         </div>
         <div>
