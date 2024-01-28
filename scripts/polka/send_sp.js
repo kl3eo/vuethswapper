@@ -10,6 +10,7 @@ async function main () {
 
 const api = await ApiPromise.create(
 {provider, types: {
+"AccountInfo": "AccountInfoWithDualRefCount",
 "Address": "AccountId",
 "LookupSource": "AccountId",
 "Account": {
@@ -43,7 +44,7 @@ const keyring = new Keyring({ type: 'sr25519' });
 const alicePair = keyring.createFromJson(jsn);
 alicePair.decodePkcs8(exchangePassword);
 
-const val = parseInt(val_arg);
+const val = BigInt(parseInt(val_arg));
 
 const transfer = api.tx.balances.transfer(to_arg, val);
 

@@ -597,6 +597,7 @@ export default {
         return
       }
       let v = this.isHex(this.val) ? parseInt(this.val, 16) : parseInt(this.val)
+      console.log('Here param v', v, 'this val is', this.val)
       // console.log('val is', this.val, 'avail is', this.avail, 'bal is', this.balance)
       // const lim = 1000
       /* if (this.val > lim * 1000000000000000000) {
@@ -621,15 +622,20 @@ export default {
         this.notify({ text: 'Value to swap cannot be 0!', class: 'is-danger' })
         return
       }
+      if (v < 1000000000000000) {
+        this.notify({ text: 'Cannot swap very small amount!', class: 'is-danger' })
+        return
+      }
       let txParams = {
         from: this.address,
         to: this.toAddress,
         chainId: this.chainId,
         nonce: this.nonce,
-        value: this.isHex(this.val) ? this.val : parseInt(this.val),
-        gasPrice: this.isHex(this.gasPrice) ? this.gasPrice : parseInt(this.gasPrice),
-        gasLimit: this.isHex(this.gasLimit) ? this.gasLimit : parseInt(this.gasLimit)
+        value: this.isHex(this.val) ? this.val : '0x' + (new BigNumber(this.val)).toString(16),
+        gasPrice: this.isHex(this.gasPrice) ? this.gasPrice : '0x' + (new BigNumber(this.gasPrice)).toString(16),
+        gasLimit: this.isHex(this.gasLimit) ? this.gasLimit : '0x' + (new BigNumber(this.gasLimit)).toString(16)
       }
+      // console.log('Here param v', txParams.value, 'this val is', this.val)
       if (this.isHex(this.data)) {
         txParams.data = this.data
       }
@@ -754,7 +760,6 @@ export default {
           // })
         }
         confirmedTransaction(provider, txId, 1, function (err, tx) {
-          // const v = this.isHex(this.val) ? new BigNumber(parseInt(this.val, 16)) : new BigNumber(parseInt(this.val))
           this.setBal()
           let formData = new FormData()
           formData.append('pass', 'lol')

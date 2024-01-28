@@ -8,13 +8,13 @@ use JSON;
 my $scriptURL = CGI::url();
 my $a = $ENV{'REMOTE_ADDR'};
 
-my $ddositsuko = ddos_check($scriptURL, $a);
+my $ddositsuko = ddos_check($scriptURL);
 
 my $par = 11;
 
 if ($ddositsuko > $par) {
 	exit if ($ddositsuko > $par+1); #important not to apply again
-	my $applied = apply_firewall($a);
+	my $applied = apply_firewall();
 	
 	if ($applied) {
 
@@ -29,6 +29,7 @@ my $dbase = "cp";
 my $port = 5432;
 
 my $ret = "ERR";
+my $nett = 0;
 
 $query = new CGI;
 my $sess = $query->cookie('session');
@@ -43,17 +44,18 @@ my $rpc_server = defined($query->param('rpc_server')) ? $query->param('rpc_serve
 
 exit unless length($rpc_server);
 
-my $rpc = $rpc_server eq "https://rpc.callisto.network" ? "callisto" : $rpc_server eq "https://node.expanse.tech" ? "expanse" : $rpc_server =~ /room-house.com/ ? "expClassic" : '';
+my $rpc = $rpc_server eq "https://rpc.callisto.network" ? "callisto" : $rpc_server eq "https://wien.room-house.com" ? "expanse" : $rpc_server eq "https://paris.room-house.com" ? "expClassic" : '';
 
 my $cmd = '';
 
-my $doghouse = "lol";
+my $doghouse = "shit";
 my $denom1 = 1000000000000;
 my $denom2 = 1000000000000000000;
 
 $dbconn=DBI->connect("dbi:Pg:dbname=$dbase;port=$port;host=$server",$user, $passwd);
 
 $dbconn->{LongReadLen} = 16384;
+
 
 if (length($txhash) && $pass eq "lol") {
 
@@ -96,44 +98,88 @@ if (length($txhash) && $pass eq "lol") {
   my $last_addr = ${${$listresult}[0]}[1];
   my $acc_id = ${${$listresult}[0]}[2];
   my $good = ($ntuples == 1 && ($curr == $last_num || $curr == $last_num + 1 || $curr == $last_num + 2 || $curr == $last_num + 3 || $curr == $last_num + 4 || $curr == $last_num + 5) && $last_addr eq $addr) ? 1 : 0;
-#print STDERR "Here curr is $curr, lastnum is $last_num, ntuples is $ntuples, sess is $sess, dest is $acc_id, good is $good!\n";	  
+print STDERR "Here curr is $curr, lastnum is $last_num, ntuples is $ntuples, sess is $sess, dest is $acc_id, good is $good!\n";	  
   if ($good) {
    $txhash =~ /^0x(.+)$/g;
 	 my $th = $1;
-	
+print STDERR "Here th is $th, server is $rpc_server!\n";	
 	 my $good_addr_sum = `node /opt/nvme/web3/get_tx_by_hash.js --th=$th --server=$rpc_server`;
 	 $good_addr_sum =~ s/(\r|\n|"|\s)//g;
 	 my ($good_addr, $sum) = split('#', $good_addr_sum);
 	 my $l = length($good_addr);
-#print STDERR "Here length is $l, addr is $good_addr, last_addr is $last_addr!\n";
+print STDERR "Here length is $l, addr is $good_addr, last_addr is $last_addr!\n";
 	 if (length($good_addr) == 42 && substr($good_addr,0,2) == '0x' && $last_addr eq $good_addr) {
 
 		$cmd = "update vw_sessions set addr = ?, bnum = ?, sum = ?, last_addr = null where session = ?";
 		my $result=$dbconn->prepare($cmd);
         	$result->execute($good_addr, $curr, $sum, $sess);
 		
-		my $pi = $sum / $denom2;
+		#my $pi = $sum / $denom2;
+		my $pi = $sum; my $repoA = $sum * 0.000000000000000001; #denom2
 		
 		#now report first part of eth->rhc swap to History
-		my $str = "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data 'mode=i&pass=$doghouse&txs=$txhash&sumA=$pi&sender=$good_addr' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl";
-#print STDERR "Here curl: $str!\n";
+		my $str = "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data '&mode=i&pass=$doghouse&txs=$txhash&sumA=$repoA&sender=$good_addr' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl";
+print STDERR "Here curl: $str!\n";
 		my $res = `$str`;
 		
-		my $pi_r = $pi * 1; # ratio
-		my $pi_ratio = $pi_r * $denom1;
+		my $pi_r = $rpc eq "expClassic" ? $pi * 1 : $pi * 20; my $repoB = $pi_r * 0.000000000000000001; #change ratio
+		my $pi_ratio = $pi_r * 0.000001; # denom1/denom2 = 0.000001
 		
 		#now do sending with @polkadot/api
+		$str = "node /opt/nvme/polka/send_sp.js --val=$pi_ratio --to=$acc_id";
+print STDERR "Sending with $str!\n";
+		
 		my $bhash = `node /opt/nvme/polka/send_sp.js --val=$pi_ratio --to=$acc_id`;
 		$bhash =~ s/(\r|\n)//g;
-#print STDERR "Here bhash is: $bhash!\n";
+print STDERR "Here bhash is: $bhash!\n";
 		#now report second part of eth->rhc swap to History, if txr is good
-		my $str = length($bhash) ? "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data 'mode=u&pass=$doghouse&txs=$txhash&txr=$bhash&sumB=$pi_r&receiver=$acc_id' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl" : '';
-#print STDERR "Here curl2: $str!\n";
+		my $str = length($bhash) ? "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data '&mode=u&pass=$doghouse&txs=$txhash&txr=$bhash&sumB=$repoB&receiver=$acc_id' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl" : '';
+print STDERR "Here curl2: $str!\n";
 		my $res = `$str`;
 		$ret = $bhash;
 	 } else {
 		$ret = "ERR";
-   }
+	 }
+#now check if metamask with expc setting
+	 if ($ret eq "ERR" && $rpc_server eq "https://wien.room-house.com") {
+		$rpc_server = "https://paris.room-house.com";
+		$good_addr_sum = `node /opt/nvme/web3/get_tx_by_hash.js --th=$th --server=$rpc_server`;
+	 	$good_addr_sum =~ s/(\r|\n|"|\s)//g;
+	 	my ($good_addr, $sum) = split('#', $good_addr_sum);
+	 	my $l = length($good_addr);
+		print STDERR "Here length is $l, addr is $good_addr, last_addr is $last_addr!\n";
+		if (length($good_addr) == 42 && substr($good_addr,0,2) == '0x' && $last_addr eq $good_addr) {
+
+			$cmd = "update vw_sessions set addr = ?, bnum = ?, sum = ?, last_addr = null where session = ?";
+			my $result=$dbconn->prepare($cmd);
+        		$result->execute($good_addr, $curr, $sum, $sess);
+		
+			#my $pi = $sum / $denom2;
+			my $pi = $sum; my $repoA = $sum * 0.000000000000000001; #denom2
+		
+		#now report first part of eth->rhc swap to History
+			my $str = "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data '&mode=i&pass=$doghouse&txs=$txhash&sumA=$repoA&sender=$good_addr' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl";
+print STDERR "Here curl: $str!\n";
+			my $res = `$str`;
+		
+			my $pi_r = $pi * 1; my $repoB = $pi_r * 0.000000000000000001; #change ratio
+			my $pi_ratio = $pi_r * 0.000001; # denom1/denom2 = 0.000001
+		
+		#now do sending with @polkadot/api
+print STDERR "Sending after Metamask with $str!\n";
+			my $bhash = `node /opt/nvme/polka/send_sp.js --val=$pi_ratio --to=$acc_id`;
+			$bhash =~ s/(\r|\n)//g;
+print STDERR "Here bhash is: $bhash!\n";
+			#now report second part of eth->rhc swap to History, if txr is good
+			my $str = length($bhash) ? "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data '&mode=u&pass=$doghouse&txs=$txhash&txr=$bhash&sumB=$repoB&receiver=$acc_id' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl" : '';
+print STDERR "Here curl2: $str!\n";
+			my $res = `$str`;
+			$ret = $bhash;
+			$nett = 1;
+		} else {
+			$ret = "ERR";
+		}
+	 }
   } else {
 	   $ret = "ERR";
   }
@@ -210,8 +256,10 @@ if (length($txhash) && $pass eq "lol") {
 
 print "Content-type:application/json; charset=UTF-8\r\n\r\n";
 
-my %hash = ('result' => $ret);
+my %hash = ('result' => $ret, 'net' => $nett);
 $j = encode_json(\%hash);
+
+#print STDERR "j is $j!\n";
 print $j; #returning to fetch
 
 $dbconn->disconnect;
@@ -221,17 +269,16 @@ exit;
 sub ddos_check {
 
 my $url = shift;
-my $a = shift;
 
 my $checklist = "/var/www/html/cp/handlers/checklist";
 
 my $checkstr = $a."_".$url;
 open (IN,$checklist);
-my $counter = 0;
-while (!eof(IN)) {
+   my $counter = 0;
+   while (!eof(IN)) {
 	my $q = readline (*IN); $q =~ s/\n//g;
 	$counter++ if ($q eq $checkstr);
-}
+   }
    
 close (IN);
 
@@ -239,8 +286,6 @@ return $counter;
 }
 
 sub apply_firewall {
-
-my $a = shift;
 
 system("sudo /usr/local/bin/ip_apply $a");
 print STDERR "sudo /usr/local/bin/ip_apply $a\n";
