@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <h2 class="panel-heading">SkyRHC Swap 1:20 Exp; 1:1 ExpC</h2>
+    <h2 class="panel-heading">SkyRHC Swap 4:1 Exp; 80:1 ExpC</h2>
 
     <div class="panel-block">
       <div class="container">
@@ -428,7 +428,7 @@ export default {
               this.notify({ text: 'Please use Expanse!', class: 'is-danger' })
               throw new TypeError('Wrong chain')
             } else {
-              this.ratio = 20 // change ratio
+              this.ratio = 0.25 // change ratio
             }
             const accounts = await metamaskProvider.request({ method: 'eth_requestAccounts' })
             this.handleAccountsChange(accounts)
@@ -604,7 +604,8 @@ export default {
         this.notify({ text: 'Maximum ' + lim + ' coins swap!', class: 'is-danger' })
         return
       } */
-      if (this.val > this.avail * 50000000000000000 && this.host !== 'https://paris.room-house.com') { // 1:20
+      // if (this.val > this.avail * 50000000000000000 && this.host !== 'https://paris.room-house.com') { // 1:20
+      if (this.val > this.avail * 4000000000000000000 && this.host !== 'https://paris.room-house.com') { // 4:1
         this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
         return
       }
@@ -622,7 +623,7 @@ export default {
         this.notify({ text: 'Value to swap cannot be 0!', class: 'is-danger' })
         return
       }
-      if (v < 1000000000000000) {
+      if (v < 1000000000000000 && this.val < 1000000000000000) {
         this.notify({ text: 'Cannot swap very small amount!', class: 'is-danger' })
         return
       }
@@ -657,7 +658,8 @@ export default {
       }
     },
     async sendTransaction () {
-      if (this.val > this.avail * 50000000000000000) { // 1:20
+      // if (this.val > this.avail * 50000000000000000) { // 1:20
+      if (this.val > this.avail * 4000000000000000000) { // 4:1
         this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
         // return // for Metamask and ExpC
       }
@@ -803,7 +805,7 @@ export default {
       this.host = host.rpcUri
       this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
       this.chainId = host.chainId
-      this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 20
+      this.ratio = this.host === 'https://paris.room-house.com' ? 0.0125 : 0.25
     },
     isHex (s) {
       if (typeof s !== 'string') {

@@ -6,8 +6,8 @@
 
   <div class="column is-half">
     <div class="control">
-      <input id="pass" class="input" type="text" v-model="password" placeholder="Password" v-on:blur.prevent.self="checkPassword" v-if="type === 'text'" v-bind:class="{'is-danger': ((!isPasswordValid && !emptyPassword) || error), 'is-success': (isPasswordValid)}">
-      <input id="pass" class="input" type="password" v-model="password" placeholder="Password" v-on:blur.prevent.self="checkPassword" v-if="type === 'password'" v-bind:class="{'is-danger': ((!isPasswordValid && !emptyPassword) || error), 'is-success': (isPasswordValid)}">
+      <input id="pass" class="input" type="text"  autocomplete="off" v-model="password" placeholder="Password" v-on:blur.prevent.self="checkPassword" v-if="type === 'text'" v-bind:class="{'is-danger': ((!isPasswordValid && !emptyPassword) || error), 'is-success': (isPasswordValid)}">
+      <input id="pass" class="input" type="password"  autocomplete="off" v-model="password" placeholder="Password" v-on:blur.prevent.self="checkPassword" v-if="type === 'password'" v-bind:class="{'is-danger': ((!isPasswordValid && !emptyPassword) || error), 'is-success': (isPasswordValid)}">
       <p class="help is-success password-help" v-if="isPasswordValid">
         <span class="password-help-msg">Strong Password</span>
       </p>
