@@ -65,7 +65,7 @@ export default new Router({
           name: 'spExchange',
           component: SPExchange,
           meta: {
-            title: 'SkyRHC Exchange'
+            title: 'Exchange'
           }
         }
       ]

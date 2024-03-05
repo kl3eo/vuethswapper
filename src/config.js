@@ -39,13 +39,13 @@ config.hosts = {
     explorerUri: 'https://explorer.expanse.tech/',
     chainId: 2
   },
-  expClassic: {
+/*  expClassic: {
     test: false,
     rpcUri: 'https://africa.room-house.com',
     explorerUri: 'https://expanscout.com/',
     chainId: 2
   }
-
+*/
 
 }
 

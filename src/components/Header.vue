@@ -20,7 +20,7 @@
             <router-link class="navbar-item" to="/eth/wallet-seed">Mnemonic Wallet</router-link>
             <router-link class="navbar-item" to="/eth/import-keystore">Import Wallet</router-link>
             <router-link class="navbar-item" to="/eth/value-transaction">Transfer Funds</router-link>
-            <router-link class="navbar-item" to="/eth/sp-exchange">SkyRHC Swap</router-link>
+            <router-link class="navbar-item" to="/eth/sp-exchange">Swap</router-link>
           </div>
         </div>
       </div>

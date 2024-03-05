@@ -504,7 +504,8 @@ export default {
         to: this.toAddress,
         chainId: this.chainId,
         nonce: this.nonce,
-        value: this.isHex(this.val) ? this.val : parseInt(this.val),
+        // value: this.isHex(this.val) ? this.val : parseInt(this.val),
+        value: this.isHex(this.val) ? this.val : '0x' + (new BigNumber(this.val)).toString(16),
         gasPrice: this.isHex(this.gasPrice) ? this.gasPrice : parseInt(this.gasPrice),
         gasLimit: this.isHex(this.gasLimit) ? this.gasLimit : parseInt(this.gasLimit)
       }

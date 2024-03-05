@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <h2 class="panel-heading">SkyRHC Swap 4:1 Exp; 80:1 ExpC</h2>
+    <h2 class="panel-heading">Exp/Pirl Swap 1:1</h2>
 
     <div class="panel-block">
       <div class="container">
@@ -122,15 +122,15 @@
         <div class="container">
           <div class="columns">
             <div class="column is-one-quarter">
-              <label class="label">SkyRHC Address</label>
+              <label class="label">Pirl Address</label>
             </div>
           
             <div class="column is-third-quarter">
               <div class="control">
 		<!-- input id="toAddress" class="input" type="text" v-model="toAddress" value=this.toAddress disabled -->
-		<input id="spAddress" class="input" type="text" v-model="spAddress" placeholder="SkyRHC Address" v-bind:class="{'is-danger': (!isSPAddressValid && spAddress), 'is-success': isSPAddressValid}" required>
-                <p class="help is-danger" v-if="!isSPAddressValid && spAddress">SkyRHC Address isn't valid</p>
-                <p class="help is-success" v-if="isSPAddressValid && spAddress">SkyRHC Address is valid</p>
+		<input id="spAddress" class="input" type="text" v-model="spAddress" placeholder="Pirl Address" v-bind:class="{'is-danger': (!isSPAddressValid && spAddress), 'is-success': isSPAddressValid}" required>
+                <p class="help is-danger" v-if="!isSPAddressValid && spAddress">Pirl Address isn't valid</p>
+                <p class="help is-success" v-if="isSPAddressValid && spAddress">Pirl Address is valid</p>
               </div>
             </div>
           </div>
@@ -428,7 +428,8 @@ export default {
               this.notify({ text: 'Please use Expanse!', class: 'is-danger' })
               throw new TypeError('Wrong chain')
             } else {
-              this.ratio = 0.25 // change ratio
+              // this.ratio = 20 // change ratio
+              this.ratio = 1 // change ratio
             }
             const accounts = await metamaskProvider.request({ method: 'eth_requestAccounts' })
             this.handleAccountsChange(accounts)
@@ -544,7 +545,7 @@ export default {
         let { data: balance, nonce: previousNonce } = await api.query.system.account(this.spXETR)
         if (previousNonce && previousNonce.words && previousNonce.words[0]) {
           this.avail = (parseInt(balance.free) - parseInt(balance.miscFrozen)) / 1000000000000
-          this.ticker = 'RHC'
+          this.ticker = 'PIRL'
           return true
         }
         this.api_checked = true
@@ -593,7 +594,7 @@ export default {
         return
       }
       if (!this.spAddress || !this.isSPAddressValid) {
-        this.notify({ text: 'Please enter correct SkyRHC address!', class: 'is-danger' })
+        this.notify({ text: 'Please enter correct Pirl address!', class: 'is-danger' })
         return
       }
       let v = this.isHex(this.val) ? parseInt(this.val, 16) : parseInt(this.val)
@@ -604,8 +605,9 @@ export default {
         this.notify({ text: 'Maximum ' + lim + ' coins swap!', class: 'is-danger' })
         return
       } */
+      if (this.val > this.avail * 1000000000000000000 && this.host !== 'https://paris.room-house.com') { // 1:1
       // if (this.val > this.avail * 50000000000000000 && this.host !== 'https://paris.room-house.com') { // 1:20
-      if (this.val > this.avail * 4000000000000000000 && this.host !== 'https://paris.room-house.com') { // 4:1
+      // if (this.val > this.avail * 4000000000000000000 && this.host !== 'https://paris.room-house.com') { // 4:1
         this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
         return
       }
@@ -659,7 +661,8 @@ export default {
     },
     async sendTransaction () {
       // if (this.val > this.avail * 50000000000000000) { // 1:20
-      if (this.val > this.avail * 4000000000000000000) { // 4:1
+      // if (this.val > this.avail * 4000000000000000000) { // 4:1
+      if (this.val > this.avail * 1000000000000000000) { // 1:1
         this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
         // return // for Metamask and ExpC
       }
@@ -679,7 +682,7 @@ export default {
       this.send = true
       const ret = this.checkIt()
       if (!ret) {
-        this.notify({ text: 'No connection to SkyRHC!', class: 'is-danger' })
+        this.notify({ text: 'No connection to Pirl!', class: 'is-danger' })
         return
       }
 
@@ -805,7 +808,9 @@ export default {
       this.host = host.rpcUri
       this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
       this.chainId = host.chainId
-      this.ratio = this.host === 'https://paris.room-house.com' ? 0.0125 : 0.25
+      this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 1
+      // this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 20
+      // this.ratio = this.host === 'https://paris.room-house.com' ? 0.0125 : 0.25
     },
     isHex (s) {
       if (typeof s !== 'string') {
