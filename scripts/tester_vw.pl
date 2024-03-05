@@ -122,7 +122,7 @@ print STDERR "Here length is $l, addr is $good_addr, last_addr is $last_addr!\n"
 print STDERR "Here curl: $str!\n";
 		my $res = `$str`;
 		
-		my $pi_r = $rpc eq "expClassic" ? $pi * 1 : $pi * 20; my $repoB = $pi_r * 0.000000000000000001; #change ratio
+		my $pi_r = $rpc eq "expClassic" ? $pi * 1 : $pi * 1; my $repoB = $pi_r * 0.000000000000000001; #change ratio
 		my $pi_ratio = $pi_r * 0.000001; # denom1/denom2 = 0.000001
 		
 		#now do sending with @polkadot/api
