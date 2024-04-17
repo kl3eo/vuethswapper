@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <h2 class="panel-heading">Exp/Pirl Swap 1:1</h2>
+    <h2 class="panel-heading">Swap Exp or Ubq to Pirl 1:1</h2>
 
     <div class="panel-block">
       <div class="container">
@@ -258,7 +258,8 @@ export default {
       api_checked: false,
       keyringLoaded: false,
       val: new BigNumber(0),
-      gasPrice: '20000000000',
+      // 20000000000 good for Exp, 80000000000 for ubq, but let's make it quick on 90 gwei
+      gasPrice: '90000000000',
       gasLimit: '21000',
       gas: '',
       data: '',
@@ -424,8 +425,8 @@ export default {
           if (metamaskProvider === window.ethereum) {
             this.metamaskProvider = metamaskProvider
             this.chainId = await metamaskProvider.request({ method: 'eth_chainId' })
-            if (this.chainId !== '0x2') {
-              this.notify({ text: 'Please use Expanse!', class: 'is-danger' })
+            if (this.chainId !== '0x2' && this.chainId !== '0x8') {
+              this.notify({ text: 'Chain not supported!', class: 'is-danger' })
               throw new TypeError('Wrong chain')
             } else {
               // this.ratio = 20 // change ratio
@@ -605,13 +606,15 @@ export default {
         this.notify({ text: 'Maximum ' + lim + ' coins swap!', class: 'is-danger' })
         return
       } */
-      if (this.val > this.avail * 1000000000000000000 && this.host !== 'https://paris.room-house.com') { // 1:1
+      if (this.val > this.avail * 1000000000000000000) { // 1:1
+      // if (this.val > this.avail * 1000000000000000000 && this.host !== 'https://paris.room-house.com') { // 1:1
       // if (this.val > this.avail * 50000000000000000 && this.host !== 'https://paris.room-house.com') { // 1:20
       // if (this.val > this.avail * 4000000000000000000 && this.host !== 'https://paris.room-house.com') { // 4:1
         this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
         return
       }
-      if (this.val > this.avail * 1000000000000000000 && this.host === 'https://paris.room-house.com') { // 1:1
+      if (this.val > this.avail * 1000000000000000000) { // 1:1
+      // if (this.val > this.avail * 1000000000000000000 && this.host === 'https://paris.room-house.com') { // 1:1
         this.notify({ text: 'Available for swap only ' + this.avail + '!', class: 'is-danger' })
         return
       }
@@ -691,8 +694,11 @@ export default {
         let txId = ''
 
         // seed vw_sessions
-        this.host = (this.isMetamask) ? 'https://wien.room-house.com' : this.host // hack ash
-        this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
+        // this.host = (this.isMetamask) ? 'https://wien.room-house.com' : this.host // hack ash
+        // this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
+        // this.host = (this.isMetamask && this.chainId === '0x2') ? 'https://wien.room-house.com' : (this.isMetamask && this.chainId === '0x8') ? 'https://africa.room-house.com' : this.host // hack ash
+        this.host = (this.isMetamask && this.chainId === '0x2') ? 'https://node.expanse.tech' : (this.isMetamask && this.chainId === '0x8') ? 'https://rpc.octano.dev' : this.host // hack ash
+        this.explorer = this.host === 'https://africa.room-house.com' || this.host === 'https://rpc.octano.dev' ? 'https://ubiqscan.io' : 'https://explorer.expanse.tech'
         let fData = new FormData()
         fData.append('pass', 'lol')
         fData.append('addr', this.address)
@@ -806,9 +812,11 @@ export default {
       let host = config.hosts[e.target.value]
 
       this.host = host.rpcUri
-      this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
+      this.explorer = this.host === 'https://africa.room-house.com' || this.host === 'https://rpc.octano.dev' ? 'https://ubiqscan.io' : 'https://explorer.expanse.tech'
+      // this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
       this.chainId = host.chainId
-      this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 1
+      this.ratio = 1
+      // this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 1
       // this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 20
       // this.ratio = this.host === 'https://paris.room-house.com' ? 0.0125 : 0.25
     },

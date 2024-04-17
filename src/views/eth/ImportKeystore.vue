@@ -115,7 +115,7 @@ export default {
         this.notify({ text: 'Please enter password!', class: 'is-danger' })
         return
       }
-      if (this.score < 1) {
+      if (this.score < 0) {
         this.notify({ text: 'Password is not strong, please change!', class: 'is-danger' })
         return
       }

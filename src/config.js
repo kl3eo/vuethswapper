@@ -36,9 +36,17 @@ config.hosts = {
   expanse: {
     test: false,
     rpcUri: 'https://node.expanse.tech',
+    // rpcUri: 'https://wien.room-house.com',
     explorerUri: 'https://explorer.expanse.tech/',
     chainId: 2
   },
+  ubq: {
+    test: false,
+    // rpcUri: 'https://africa.room-house.com',
+    rpcUri: 'https://rpc.octano.dev',
+    explorerUri: 'https://ubiqscan.io/',
+    chainId: 8
+  }
 /*  expClassic: {
     test: false,
     rpcUri: 'https://africa.room-house.com',

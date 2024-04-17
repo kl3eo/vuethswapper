@@ -394,7 +394,7 @@ export default {
           this.notify({ text: 'Please enter password!', class: 'is-danger' })
           return
         }
-        if (this.score < 1) {
+        if (this.score < 0) {
           this.notify({ text: 'Password is not strong, please change!', class: 'is-danger' })
           return
         }
@@ -504,8 +504,8 @@ export default {
         to: this.toAddress,
         chainId: this.chainId,
         nonce: this.nonce,
-        // value: this.isHex(this.val) ? this.val : parseInt(this.val),
         value: this.isHex(this.val) ? this.val : '0x' + (new BigNumber(this.val)).toString(16),
+        // value: this.isHex(this.val) ? this.val : parseInt(this.val),
         gasPrice: this.isHex(this.gasPrice) ? this.gasPrice : parseInt(this.gasPrice),
         gasLimit: this.isHex(this.gasLimit) ? this.gasLimit : parseInt(this.gasLimit)
       }
