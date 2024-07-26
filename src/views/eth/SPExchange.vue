@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <h2 class="panel-heading">Swap Exp or Ubq to Pirl 1:1</h2>
+    <h2 class="panel-heading">Swap Exp or Ubq to RHC 1:1</h2>
 
     <div class="panel-block">
       <div class="container">
@@ -122,15 +122,15 @@
         <div class="container">
           <div class="columns">
             <div class="column is-one-quarter">
-              <label class="label">Pirl Address</label>
+              <label class="label">RHC Address</label>
             </div>
           
             <div class="column is-third-quarter">
               <div class="control">
 		<!-- input id="toAddress" class="input" type="text" v-model="toAddress" value=this.toAddress disabled -->
-		<input id="spAddress" class="input" type="text" v-model="spAddress" placeholder="Pirl Address" v-bind:class="{'is-danger': (!isSPAddressValid && spAddress), 'is-success': isSPAddressValid}" required>
-                <p class="help is-danger" v-if="!isSPAddressValid && spAddress">Pirl Address isn't valid</p>
-                <p class="help is-success" v-if="isSPAddressValid && spAddress">Pirl Address is valid</p>
+		<input id="spAddress" class="input" type="text" v-model="spAddress" placeholder="RHC Address" v-bind:class="{'is-danger': (!isSPAddressValid && spAddress), 'is-success': isSPAddressValid}" required>
+                <p class="help is-danger" v-if="!isSPAddressValid && spAddress">RHC Address isn't valid</p>
+                <p class="help is-success" v-if="isSPAddressValid && spAddress">RHC Address is valid</p>
               </div>
             </div>
           </div>
@@ -251,7 +251,7 @@ export default {
       // toAddress: '0x4073bc820e0933AA92853a44A3B216C359d776d8', // to the world in swapper
       // toAddress: '0xd3f3f015873f9cd8d6698b688b109bcd33222037',
       toAddress: '0xbe95577779a588f9de556ec0df2f32fa2eb01265', // mye wimbledon
-      apiUrl: 'wss://aspen.room-house.com:8466',
+      apiUrl: 'wss://cube.room-house.com:8466',
       spAddress: '',
       spXETR: '5CkLgg19XECX98Lxam7kd4yZWyMqs6dG5Z686e2EkwtHqU86',
       shipped: false,
@@ -425,9 +425,11 @@ export default {
           if (metamaskProvider === window.ethereum) {
             this.metamaskProvider = metamaskProvider
             this.chainId = await metamaskProvider.request({ method: 'eth_chainId' })
-            if (this.chainId !== '0x2' && this.chainId !== '0x8') {
+            if (this.chainId !== '0x2' && this.chainId !== '0x8' && this.chainId !== '0x3d') {
               this.notify({ text: 'Chain not supported!', class: 'is-danger' })
               throw new TypeError('Wrong chain')
+            } else if (this.chainId === '0x3d') {
+              this.ratio = 10000 // change ratio
             } else {
               // this.ratio = 20 // change ratio
               this.ratio = 1 // change ratio
@@ -546,7 +548,7 @@ export default {
         let { data: balance, nonce: previousNonce } = await api.query.system.account(this.spXETR)
         if (previousNonce && previousNonce.words && previousNonce.words[0]) {
           this.avail = (parseInt(balance.free) - parseInt(balance.miscFrozen)) / 1000000000000
-          this.ticker = 'PIRL'
+          this.ticker = 'RHC'
           return true
         }
         this.api_checked = true
@@ -595,7 +597,7 @@ export default {
         return
       }
       if (!this.spAddress || !this.isSPAddressValid) {
-        this.notify({ text: 'Please enter correct Pirl address!', class: 'is-danger' })
+        this.notify({ text: 'Please enter correct RHC address!', class: 'is-danger' })
         return
       }
       let v = this.isHex(this.val) ? parseInt(this.val, 16) : parseInt(this.val)
@@ -685,7 +687,7 @@ export default {
       this.send = true
       const ret = this.checkIt()
       if (!ret) {
-        this.notify({ text: 'No connection to Pirl!', class: 'is-danger' })
+        this.notify({ text: 'No connection to RPC!', class: 'is-danger' })
         return
       }
 
@@ -697,8 +699,9 @@ export default {
         // this.host = (this.isMetamask) ? 'https://wien.room-house.com' : this.host // hack ash
         // this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
         // this.host = (this.isMetamask && this.chainId === '0x2') ? 'https://wien.room-house.com' : (this.isMetamask && this.chainId === '0x8') ? 'https://africa.room-house.com' : this.host // hack ash
-        this.host = (this.isMetamask && this.chainId === '0x2') ? 'https://node.expanse.tech' : (this.isMetamask && this.chainId === '0x8') ? 'https://rpc.octano.dev' : this.host // hack ash
-        this.explorer = this.host === 'https://africa.room-house.com' || this.host === 'https://rpc.octano.dev' ? 'https://ubiqscan.io' : 'https://explorer.expanse.tech'
+        // this.host = (this.isMetamask && this.chainId === '0x2') ? 'https://node.expanse.tech' : (this.isMetamask && this.chainId === '0x8') ? 'https://rpc.octano.dev' : this.host // hack ash
+        this.host = (this.isMetamask && this.chainId === '0x2') ? 'https://wien.room-house.com' : (this.isMetamask && this.chainId === '0x8') ? 'https://rpc.octano.dev' : (this.isMetamask && this.chainId === '0x3d') ? 'https://africa.room-house.com' : this.host // hack ash
+        this.explorer = this.host === 'https://africa.room-house.com' ? 'https://etc.blockscout.com' : this.host === 'https://rpc.octano.dev' ? 'https://ubiqscan.io' : 'https://explorer.expanse.tech'
         let fData = new FormData()
         fData.append('pass', 'lol')
         fData.append('addr', this.address)
@@ -815,7 +818,8 @@ export default {
       this.explorer = this.host === 'https://africa.room-house.com' || this.host === 'https://rpc.octano.dev' ? 'https://ubiqscan.io' : 'https://explorer.expanse.tech'
       // this.explorer = this.host === 'https://paris.room-house.com' ? 'https://expc.room-house.com' : 'https://explorer.expanse.tech'
       this.chainId = host.chainId
-      this.ratio = 1
+      // this.ratio = 1
+      this.ratio = this.host === 'https://africa.room-house.com' ? 10000 : 1
       // this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 1
       // this.ratio = this.host === 'https://paris.room-house.com' ? 1 : 20
       // this.ratio = this.host === 'https://paris.room-house.com' ? 0.0125 : 0.25

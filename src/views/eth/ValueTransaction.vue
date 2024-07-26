@@ -132,7 +132,7 @@
 
       <div class="panel-block">
         <div class="container">
-          <!-- ether-units v-bind:valueLabel="'Gas Price (e.g. 20000000000 wei)'" v-bind:valuePlaceholder="'20000000000'" v-on:success="(e) => {gasPrice = e.value}" / -->
+          <!-- ether-units v-bind:valueLabel="'Gas Price (e.g. 90000000000 wei)'" v-bind:valuePlaceholder="'90000000000'" v-on:success="(e) => {gasPrice = e.value}" / -->
           <div class="columns">
             <div class="column is-one-quarter">
               <label class="label" for="gas-limit">Gas Price</label>
@@ -140,7 +140,7 @@
           
             <div class="column is-third-quarter">
               <div class="control">
-		<input id="gas-price" class="input" type="text" v-model="gasPrice" placeholder="20000000000" v-bind:class="{'is-success': gasPrice}">
+		<input id="gas-price" class="input" type="text" v-model="gasPrice" placeholder="90000000000" v-bind:class="{'is-success': gasPrice}">
 		<p class="help is-success" v-if="gasPrice">Gas price is valid</p>
               </div>
             </div>
@@ -300,7 +300,7 @@ export default {
       explorer: '',
       toAddress: '',
       val: '',
-      gasPrice: '20000000000',
+      gasPrice: '90000000000',
       gasLimit: '21000',
       gas: '',
       data: '',
@@ -543,6 +543,7 @@ export default {
       const provider = (this.isMetamask) ? this.metamaskProvider : this.provider
       try {
         let txId = ''
+        this.explorer = this.chainId === '0x2' ? 'https://explorer.expanse.tech' : this.chainId === '0x8' ? 'https://ubiqscan.io' : this.explorer
         if (this.isMetamask) {
           let txParams = {
             from: this.address,

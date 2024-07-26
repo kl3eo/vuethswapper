@@ -13,7 +13,7 @@
           <span>Sender:</span>&nbsp;<span class="sender">{{swapData.sender}}</span>
         </div>
         <div>
-          <span>Sum send:</span>&nbsp;<span class="sender">{{swapData.suma}}</span>
+          <span>Sum send:</span>&nbsp;<span class="sender">{{swapData.suma}}{{swapData.cur_sender}}</span>
         </div>
         <div>
           <span>Hash rcpt:</span>&nbsp;<span>{{swapData.tx_receiver}}</span>
@@ -22,7 +22,7 @@
           <span>Recepient:</span>&nbsp;<span class="sender">{{swapData.receiver}}</span>
         </div>
          <div>
-          <span>Sum rcpt:</span>&nbsp;<span class="sender">{{swapData.sumb}}</span>
+          <span>Sum rcpt:</span>&nbsp;<span class="sender">{{swapData.sumb}}{{swapData.cur_recv}}</span>
         </div>
       </div>
       <div class="swap-dtm">

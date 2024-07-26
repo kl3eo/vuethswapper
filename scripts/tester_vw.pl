@@ -41,10 +41,11 @@ my $txhash = defined($query->param('txhash')) ? $query->param('txhash') : '';
 my $to_acc_id = defined($query->param('acc_id')) ? $query->param('acc_id') : '';
 
 my $rpc_server = defined($query->param('rpc_server')) ? $query->param('rpc_server') : '';
+print STDERR "Here server is $rpc_server!\n";
 
 exit unless length($rpc_server);
 
-my $rpc = $rpc_server eq "https://africa.room-house.com" || $rpc_server eq "https://rpc.octano.dev" ? "ubq" : $rpc_server eq "https://rpc.callisto.network" ? "callisto" : $rpc_server eq "https://wien.room-house.com" || $rpc_server eq "https://node.expanse.tech" ? "expanse" : $rpc_server eq "https://paris.room-house.com" ? "expClassic" : '';
+my $rpc = $rpc_server eq "https://africa.room-house.com" ? "etc" : $rpc_server eq "https://rpc.octano.dev" ? "ubq" : $rpc_server eq "https://rpc.callisto.network" ? "callisto" : $rpc_server eq "https://wien.room-house.com" || $rpc_server eq "https://node.expanse.tech" ? "expanse" : $rpc_server eq "https://paris.room-house.com" ? "expClassic" : '';
 
 my $cmd = '';
 
@@ -65,10 +66,11 @@ if (length($txhash) && $pass eq "lol") {
  eval {
   local $SIG{ALRM} = sub { my %hash = ('result' => 'ERR'); my $j = encode_json(\%hash); print $j; die "alarm\n" };
   alarm 5;
+  my $rpcc = $rpc.'_'.$sess;
 
-  if (-f "/tmp/bnum_w$rpc") {
+  if (-f "/tmp/bnum_w$rpcc") {
     my $c = `date +%s`;
-    my $c1 = `date +%s -r /tmp/bnum_w$rpc`;
+    my $c1 = `date +%s -r /tmp/bnum_w$rpcc`;
     my $d = $c - $c1;
     $need_u = 0 if ($d < 10);
   }
@@ -77,10 +79,10 @@ if (length($txhash) && $pass eq "lol") {
     $curr = `node /opt/nvme/web3/bnum.js --server=$rpc_server`;
     $curr =~ s/(\r|\n)//g;
     if ($curr =~ /^\d+$/) {
-      system("echo $curr > /tmp/bnum_w$rpc");
+      system("echo $curr > /tmp/bnum_w$rpcc");
     }
   } else {
-    $curr = `cat /tmp/bnum_w$rpc`;
+    $curr = `cat /tmp/bnum_w$rpcc`;
     $curr =~ s/(\r|\n)//g;
   }
   
@@ -117,12 +119,14 @@ print STDERR "Here length is $l, addr is $good_addr, last_addr is $last_addr!\n"
 		#my $pi = $sum / $denom2;
 		my $pi = $sum; my $repoA = $sum * 0.000000000000000001; #denom2
 		
+		my $send_currency = $rpc_server eq "https://rpc.octano.dev"  ? "UBQ" : $rpc_server eq "https://africa.room-house.com" ? "ETC" : "EXP";
+		
 		#now report first part of eth->rhc swap to History
-		my $str = "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data '&mode=i&pass=$doghouse&txs=$txhash&sumA=$repoA&sender=$good_addr' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl";
+		my $str = "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data '&mode=i&pass=$doghouse&txs=$txhash&sumA=$repoA&sender=$good_addr&currency=$send_currency' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl";
 print STDERR "Here curl: $str!\n";
 		my $res = `$str`;
 		
-		my $pi_r = $rpc eq "expClassic" ? $pi * 1 : $pi * 1; my $repoB = $pi_r * 0.000000000000000001; #change ratio
+		my $pi_r = $rpc eq "etc" ? $pi * 10000 : $pi * 1; my $repoB = $pi_r * 0.000000000000000001; #change ratio
 		my $pi_ratio = $pi_r * 0.000001; # denom1/denom2 = 0.000001
 		
 		#now do sending with @polkadot/api
@@ -133,7 +137,7 @@ print STDERR "Sending with $str!\n";
 		$bhash =~ s/(\r|\n)//g;
 print STDERR "Here bhash is: $bhash!\n";
 		#now report second part of eth->rhc swap to History, if txr is good
-		my $str = length($bhash) ? "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data '&mode=u&pass=$doghouse&txs=$txhash&txr=$bhash&sumB=$repoB&receiver=$acc_id' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl" : '';
+		my $str = length($bhash) ? "/usr/bin/curl --silent -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data '&mode=u&pass=$doghouse&txs=$txhash&txr=$bhash&sumB=$repoB&receiver=$acc_id&currency=RHC' --connect-timeout 5 https://coins.room-house.com/cgi/resenter.pl" : '';
 print STDERR "Here curl2: $str!\n";
 		my $res = `$str`;
 		$ret = $bhash;
@@ -196,10 +200,10 @@ print STDERR "Here curl2: $str!\n";
  eval {
   local $SIG{ALRM} = sub { my %hash = ('result' => 'ERR'); my $j = encode_json(\%hash); print $j; die "alarm\n" };
   alarm 5;
-
-  if (-f "/tmp/bnum_w$rpc") {
+  my $rpcc = $rpc.'_'.$sess;
+  if (-f "/tmp/bnum_w$rpcc") {
     my $c = `date +%s`;
-    my $c1 = `date +%s -r /tmp/bnum_w$rpc`;
+    my $c1 = `date +%s -r /tmp/bnum_w$rpcc`;
     my $d = $c - $c1;
     $need_u = 0 if ($d < 10);
   }
@@ -208,10 +212,10 @@ print STDERR "Here curl2: $str!\n";
     $res = `node /opt/nvme/web3/bnum.js --server=$rpc_server`;
     $res =~ s/(\r|\n)//g;
     if ($res =~ /^\d+$/) {
-      system("echo $res > /tmp/bnum_w$rpc");
+      system("echo $res > /tmp/bnum_w$rpcc");
     }
   } else {
-    $res = `cat /tmp/bnum_w$rpc`;
+    $res = `cat /tmp/bnum_w$rpcc`;
     $res =~ s/(\r|\n)//g;
   }
   
