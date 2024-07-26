@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1 class="title">Swap Expanse or UBQ to RHC</h1>
+    <h1 class="title">Swap EXP/UBQ/ETC to RHC</h1>
 
     <p><strong>EXP/UBQ</strong> Swap to <strong>RHC</strong> Instructions:</p>
     <div>&nbsp;</div>

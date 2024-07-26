@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <h2 class="panel-heading">Swap Exp or Ubq to RHC 1:1</h2>
+    <h2 class="panel-heading">Swap EXP/UBQ/ETC to RHC 1:1</h2>
 
     <div class="panel-block">
       <div class="container">
